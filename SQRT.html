@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>DUYSlidesAI - Từ Phép Tính Đến Thuật Toán</title>
+
+  <!-- Font Awesome 5.15.4 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <!--
+    ==================================================================
+    HƯỚNG DẪN VIẾT CÔNG THỨC TOÁN
+    Để công thức trong dòng (inline) hiển thị đẹp đúng chuẩn LaTeX
+    (ví dụ: phân số, tổng sigma), hãy luôn thêm `\displaystyle`
+    vào ngay sau ký tự `$` mở đầu.
+
+    VÍ DỤ:
+    - CHUẨN:   $\displaystyle \frac{a+b}{c}$ hoặc $\displaystyle \sum_{i=1}^{n} i$
+    - KHÔNG CHUẨN: $\frac{a+b}{c}$ hoặc $\sum_{i=1}^{n} i$
+    ==================================================================
+  -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [["$","$"],["\\(","\\)"]],
+        displayMath: [["$$","$$"],["\\[","\\]"]]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <style>
+    :root {
+      --color-memo: #16a085; --bg-memo: #f0fdfa;
+      --color-activity: #d35400; --bg-activity: #fff8f2;
+      --color-example: #2980b9; --bg-example: #f2f9ff;
+      --color-exercise: #8e44ad; --bg-exercise: #fbf5ff;
+      --color-proof: #0077b6; --bg-proof: #f2fbff;
+      --color-note: #c29304; --bg-note: #fffcf2;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.7; background-color: #f0f2f5; color: #3a3a3a; padding: 20px; }
+    .container { max-width: 980px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+    .header h1 { font-size: 2.2rem; color: #1a5276; margin-bottom: 8px; }
+    .header .author { font-size: 1.05rem; color: #555; font-style: italic; }
+
+    .box { position: relative; padding: 16px; padding-top: 25px; padding-bottom: 35px; padding-right: 25px; margin: 20px 0; border: 1px solid #e0e0e0; border-left-width: 5px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .box-title { font-size: 1.16rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; }
+    .box-title .fas { margin-right: 10px; font-size: 1.05em; }
+    ul, ol { padding-left: 25px; }
+
+    .trigger-bar { height: 10px; width: 100%; cursor: pointer; opacity: 0.85; transition: opacity 0.2s; }
+    .trigger-bar:hover { opacity: 1; }
+    .trigger-top { position: absolute; top: 0; left: 0; width: calc(100% - 10px); border-top-left-radius: 8px; overflow: hidden; }
+    .trigger-image-link { background: linear-gradient(90deg, #9b59b6, #3498db, #1abc9c); }
+    .trigger-right { position: absolute; top: 0; right: 0; width: 10px; height: 100%; background: linear-gradient(180deg, #00c6ff, #0072ff); cursor: pointer; opacity: 0.85; transition: opacity 0.2s; border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+    .trigger-right:hover { opacity: 1; }
+    .triggers-bottom { position: absolute; bottom: 0; left: 0; width: calc(100% - 10px); border-bottom-left-radius: 8px; overflow: hidden; }
+    .trigger-audio { background: linear-gradient(90deg, #f1c40f, #e67e22, #d35400); }
+    .trigger-image-file { background: linear-gradient(90deg, #3498db, #2ecc71, #e74c3c, #f39c12); }
+
+    .media-content-area { background: rgba(249, 249, 249, 0.7); border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-top: 18px; }
+    .image-placeholder { display: flex; justify-content: center; align-items: center; min-height: 120px; border: 2px dashed #ccc; border-radius: 8px; color: #888; text-align: center; padding: 10px; font-size: 0.9em; }
+    .image-preview { max-width: 100%; max-height: 300px; display: none; margin: 0 auto; border-radius: 8px; }
+    .audio-container { margin-top: 15px; min-height: 25px; }
+    .embed-app-container { display: none; margin-top: 15px; }
+    .embed-app-container iframe { width: 100%; height: 450px; border: 1px solid #ddd; border-radius: 8px; }
+
+    .custom-audio-player { display: none; height: 24px; width: 100%; background: linear-gradient(90deg, #8e44ad, #3498db, #16a085); border-radius: 12px; cursor: pointer; padding: 0 15px; align-items: center; opacity: 0.9; }
+    .play-pause-btn { width: 0; height: 0; border-style: solid; border-width: 7px 0 7px 12px; border-color: transparent transparent transparent #fff; }
+    .play-pause-btn.playing { border-style: double; border-width: 0 0 0 10px; height: 14px; border-color: #fff; }
+    .embed-audio-container { display: none; }
+    .embed-audio-container iframe { border: none; border-radius: 8px; width: 100%; }
+    audio, .file-input { display: none; }
+
+    .memo-box { background-color: var(--bg-memo); border-left-color: var(--color-memo); } .memo-box .box-title { color: var(--color-memo); }
+    .activity-box { background-color: var(--bg-activity); border-left-color: var(--color-activity); } .activity-box .box-title { color: var(--color-activity); }
+    .example-box { background-color: var(--bg-example); border-left-color: var(--color-example); } .example-box .box-title { color: var(--color-example); }
+    .exercise-box { background-color: var(--bg-exercise); border-left-color: var(--color-exercise); } .exercise-box .box-title { color: var(--color-exercise); }
+    .proof-box { background-color: var(--bg-proof); border-left-color: var(--color-proof); } .proof-box .box-title { color: var(--color-proof); }
+    .note-box { background-color: var(--bg-note); border-left-color: var(--color-note); } .note-box .box-title { color: var(--color-note); }
+
+    .section-container h2 { font-size: 1.6rem; color: #2874a6; margin: 34px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #3498db; }
+    .math-term strong { color: #c0392b; }
+    .math-term em { color: #7f8c8d; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Từ Phép Tính Đến Thuật Toán: Hành Trình Tìm Căn Bậc Hai Của 2</h1>
+    <p class="author">Duymt2 Đại học Mai Duy Khánh Linh</p>
+  </div>
+  
+  <div class="box note-box" data-id="info">
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title"><i class="fas fa-info-circle"></i> Thông tin nhanh bài học</div>
+    <p><strong>Lớp/Khối:</strong> Lớp 7 trở lên<br>
+    <strong>Thời lượng:</strong> 15 phút<br>
+    <strong>Thiết bị/ĐDDH:</strong> Bảng, bút, máy tính cầm tay.</p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">Chưa có media trực quan...</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="box memo-box" data-id="goals">
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title"><i class="fas fa-lightbulb"></i> Mục tiêu</div>
+    <p>Sau buổi học này, chúng ta sẽ mở khóa một bí mật quan trọng trong toán học:</p>
+    <ul>
+      <li>Phân biệt rạch ròi giữa một <span class="math-term"><strong>phép tính</strong> (<em>operation</em>)</span> và một <span class="math-term"><strong>thuật toán</strong> (<em>algorithm</em>)</span> (hay quy trình).</li>
+      <li>Tự mình trải nghiệm "thuật toán đoán mò" để xấp xỉ giá trị của $\displaystyle\sqrt{2}$.</li>
+      <li>Hiểu rằng không phải lúc nào cũng có một "phép tính" trực tiếp để giải toán, và đó là lúc "quy trình" lên ngôi.</li>
+      <li>Biết được chiếc máy tính của bạn thực sự làm gì khi bạn bấm nút căn bậc hai!</li>
+    </ul>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">Có thể chèn ảnh một chiếc máy tính cầm tay...</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container">
+        <div class="custom-audio-player" style="display: none;"><div class="play-pause-btn"></div></div>
+        <div class="embed-audio-container" style="display: block;">
+            <p style="font-size: 0.9em; color: #555; margin-bottom: 5px;"><strong><i class="fas fa-headphones"></i> Âm thanh bài giảng (từ file LaTeX):</strong></p>
+            <iframe width="100%" height="60" src="https://vocaroo.com/embed/1ZiZyLkhMKQ3?autoplay=0" frameborder="0" allow="autoplay" style="border-radius: 8px;"></iframe>
+        </div>
+        <audio></audio>
+      </div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="section-container"><h2>1. Từ khóa & khái niệm</h2></div>
+  
+  <div class="box note-box" data-id="vocab">
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title"><i class="fas fa-key"></i> Từ vựng & Ký hiệu</div>
+    <ul>
+      <li><span class="math-term"><strong>Phép tính</strong> (<em>Operation</em>)</span>: Một hành động toán học trực tiếp, dứt khoát. Giống như bật công tắc đèn: một hành động, một kết quả. Ví dụ: $5^2=25$.</li>
+      <li><span class="math-term"><strong>Thuật toán/Quy trình</strong> (<em>Algorithm/Procedure</em>)</span>: Một chuỗi các bước được xác định rõ ràng để giải quyết một vấn đề. Giống như một công thức nấu ăn: bạn phải làm theo từng bước để có được món ăn cuối cùng.</li>
+      <li><span class="math-term"><strong>Xấp xỉ</strong> (<em>Approximation</em>)</span>: Tìm một giá trị "gần đúng" với câu trả lời chính xác. Quá trình tìm $\displaystyle\sqrt{2}$ là một chuỗi các bước xấp xỉ ngày càng tốt hơn.</li>
+    </ul>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">Chưa có media trực quan...</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="box activity-box" data-id="warmup">
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title"><i class="fas fa-laugh-beam"></i> Khởi động vui</div>
+    <p>Ở tiểu học, chúng ta biết đi xuôi: $5^2 = 25$. Lên lớp lớn hơn, ta học cách đi ngược: số nào bình phương bằng 25? $\rightarrow$ số 5.</p>
+    <p>Vậy bây giờ, với câu hỏi: "Số nào bình phương lên bằng 2?". Chúng ta có thể trả lời ngay trong một bước như trên không? Tại sao?</p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">Chưa có media trực quan...</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="section-container"><h2>2. Nội dung cốt lõi: Khi "Phép tính" bất lực, "Quy trình" lên tiếng</h2></div>
+  
+  <p>Hành trình học toán của chúng ta là một sự nâng cấp về tư duy. Từ chỗ chỉ quen với các phép tính trực tiếp, ta phải làm quen với các quy trình, các thuật toán.</p>
+  
+  <div class="box example-box" data-id="challenge">
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title"><i class="fas fa-question-circle"></i> Thách thức: Tìm $x$ sao cho $x^2 = 2$</div>
+    <p>Tư duy "phép tính" của tiểu học sẽ gặp khó khăn ở đây.</p>
+    <ul>
+      <li>$1^2 = 1$ (quá nhỏ)</li>
+      <li>$2^2 = 4$ (quá lớn)</li>
+    </ul>
+    <p>Rõ ràng, $x$ phải là một số nào đó nằm giữa 1 và 2. Nhưng là số nào? Không có một "phép tính" đơn lẻ nào cho ta câu trả lời ngay lập tức.</p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">Chưa có media trực quan...</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="box proof-box" data-id="algorithm">
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title"><i class="fas fa-cogs"></i> Thuật toán "Dập Dình" tìm $\displaystyle\sqrt{2}$</div>
+    <p>Chúng ta không có phép tính, nhưng chúng ta có thể tạo ra một <strong>quy trình</strong> để tiến gần đến đáp án. Đây là một thuật toán "thử và sai" có hệ thống:</p>
+    <ol>
+      <li><strong>Đoán lần 1:</strong> Thử số ở giữa 1 và 2, ví dụ <strong>1.5</strong>.
+      $$ 1.5^2 = 2.25 \quad (\text{Lớn hơn 2} \rightarrow \text{phải hạ xuống}) $$</li>
+      <li><strong>Đoán lần 2:</strong> Thử một số nhỏ hơn 1.5, ví dụ <strong>1.4</strong>.
+      $$ 1.4^2 = 1.96 \quad (\text{Nhỏ hơn 2} \rightarrow \text{phải tăng lên}) $$</li>
+      <li><strong>Đoán lần 3:</strong> Số cần tìm nằm giữa 1.4 và 1.5. Thử <strong>1.41</strong>.
+      $$ 1.41^2 = 1.9881 \quad (\text{Vẫn nhỏ hơn 2} \rightarrow \text{tiếp tục tăng}) $$</li>
+      <li><strong>Đoán lần 4:</strong> Thử <strong>1.42</strong>.
+      $$ 1.42^2 = 2.0164 \quad (\text{Lớn hơn 2} \rightarrow \text{phải hạ xuống}) $$</li>
+      <li><strong>... và cứ thế tiếp tục!</strong> Quá trình này cứ "dập dình" lên xuống quanh số 2, mỗi lần lại "bóp nghẹt" khoảng cách lại gần hơn. Các nhà toán học đã chứng minh quy trình này không bao giờ kết thúc!</li>
+    </ol>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">Chưa có media trực quan...</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="box memo-box" data-id="conclusion">
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title"><i class="fas fa-exclamation-circle"></i> Kết luận chấn động: Không có "phép tính" căn bậc hai!</div>
+    <p>Điều chúng ta vừa làm không phải là một phép tính, mà là một <strong>QUY TRÌNH TÍNH</strong> căn bậc hai.</p>
+    <ul>
+      <li>Ký hiệu $\displaystyle\sqrt{2}$ không phải là tên của một phép tính, mà là tên của <strong>kết quả</strong> của một quy trình vô hạn.</li>
+      <li>Khi bạn bấm nút $\displaystyle\sqrt{\phantom{x}}$ trên máy tính, nó không "biết" câu trả lời. Nó đang chạy một thuật toán cực nhanh (tinh vi hơn thuật toán của chúng ta) để tìm ra một giá trị xấp xỉ rất tốt và hiển thị cho bạn.</li>
+    </ul>
+    <p>Đây là lý do tại sao chúng ta phải học thuật toán: để giải quyết những vấn đề mà một phép tính đơn lẻ không thể xử lý được.</p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">Chưa có media trực quan...</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="section-container"><h2>3. Bài tập tự luyện</h2></div>
+  
+  <div class="box exercise-box" data-id="self_practice">
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title"><i class="fas fa-puzzle-piece"></i> Bài tập tự luyện</div>
+    <ol>
+      <li><strong>Thực hành:</strong> Dựa vào kết quả ở trên (số cần tìm nằm giữa 1.41 và 1.42), hãy thực hiện bước đoán tiếp theo của thuật toán để tìm $\displaystyle\sqrt{2}$. (Gợi ý: Thử với 1.415, 1.414...).</li>
+      <li><strong>Tư duy:</strong> Hãy mô tả bằng lời của em sự khác biệt giữa việc tính $15 \times 15$ và việc đi tìm $\displaystyle\sqrt{225}$. Sau đó, so sánh nó với việc đi tìm $\displaystyle\sqrt{226}$. Quy trình nào giống "phép tính", quy trình nào giống "thuật toán"?</li>
+      <li><strong>Liên hệ:</strong> Bạn có thể nghĩ ra một công việc nào khác trong đời sống cũng tuân theo một "thuật toán" (một chuỗi các bước) thay vì một "phép tính" (một hành động) không?</li>
+    </ol>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">Chưa có media trực quan...</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="section-container"><h2>4. Đáp án/Gợi ý lời giải</h2></div>
+  
+  <div class="box proof-box" data-id="answers">
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title"><i class="fas fa-check"></i> Đáp án/Gợi ý lời giải</div>
+    <ol>
+      <li>Ta thử $1.414^2 = 1.999396$ (rất gần 2, nhưng vẫn hơi nhỏ). Thử $1.415^2 = 2.002225$ (lớn hơn 2). Vậy $\displaystyle\sqrt{2}$ nằm giữa 1.414 và 1.415.</li>
+      <li>Tính $15 \times 15$ là một "phép tính" trực tiếp. Tìm $\displaystyle\sqrt{225}$ cũng có thể xem là một phép tính nếu ta nhẩm ra ngay $15$. Tuy nhiên, tìm $\displaystyle\sqrt{226}$ chắc chắn đòi hỏi một "thuật toán" xấp xỉ, vì kết quả không phải là số nguyên.</li>
+      <li>Rất nhiều! Ví dụ: Nấu ăn theo công thức, lắp ráp đồ nội thất theo hướng dẫn, chỉ đường từ A đến B trên bản đồ... tất cả đều là thuật toán!</li>
+    </ol>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">Chưa có media trực quan...</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="box note-box" data-id="pedagogy">
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title"><i class="fas fa-chalkboard-teacher"></i> Lưu ý sư phạm</div>
+    <p>Bài học này là một cơ hội tuyệt vời để thay đổi nhận thức của học sinh về toán học. Hãy nhấn mạnh rằng toán học không chỉ là các công thức và con số, mà quan trọng hơn là tư duy giải quyết vấn đề một cách có hệ thống. Việc hiểu sự khác biệt giữa "phép tính" và "thuật toán" là nền tảng cho việc học lập trình và tư duy logic sau này.</p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">Chưa có media trực quan...</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+</div>
+
+<script>
+  function getMediaElements(triggerElement) {
+    const box = triggerElement.closest('.box'); if (!box) return null;
+    return {
+      id: box.dataset.id, box: box,
+      preview: box.querySelector('.image-preview'), placeholder: box.querySelector('.image-placeholder'),
+      audioContainer: box.querySelector('.audio-container'), customPlayer: box.querySelector('.custom-audio-player'),
+      embedAudioContainer: box.querySelector('.audio-container .embed-audio-container'), audioPlayer: box.querySelector('audio'),
+      playBtn: box.querySelector('.play-pause-btn'), fileInput: box.querySelector('.file-input'),
+      appContainer: box.querySelector('.embed-app-container'),
+    };
+  }
+  function updatePlaceholderVisibility(elements) {
+    if (!elements || !elements.placeholder) return;
+    const imageVisible = elements.preview && elements.preview.style.display === 'block';
+    const appVisible = elements.appContainer && elements.appContainer.style.display === 'block';
+    elements.placeholder.style.display = (imageVisible || appVisible) ? 'none' : 'flex';
+  }
+  function showImage(elements, src) { if (!elements) return; elements.preview.src = src; elements.preview.style.display = 'block'; updatePlaceholderVisibility(elements); }
+  function promptImageUrl(trigger) { const url = prompt('Nhập link ảnh (URL):'); const elements = getMediaElements(trigger); if (url && elements) { localStorage.setItem(`mediaImage_${elements.id}`, url); showImage(elements, url); } }
+  function handleFileInput(input) { const file = input.files[0]; const elements = getMediaElements(input); if (file && elements) { const reader = new FileReader(); reader.onload = (e) => { localStorage.setItem(`mediaImage_${elements.id}`, e.target.result); showImage(elements, e.target.result); }; reader.readAsDataURL(file); } }
+  function triggerFileInput(trigger) { const elements = getMediaElements(trigger); if (elements && elements.fileInput) { elements.fileInput.click(); } }
+  function showAudio(elements, audioData) {
+    if (!elements) return; elements.customPlayer.style.display = 'none'; elements.embedAudioContainer.style.display = 'none'; elements.embedAudioContainer.innerHTML = ''; elements.audioPlayer.src = '';
+    if (audioData.trim().startsWith('<')) { // embed code
+      const cleaned = audioData.replace(/<br.*?>\s*<a.*?voca\.ro.*?<\/a>/i, '');
+      elements.embedAudioContainer.innerHTML = cleaned; elements.embedAudioContainer.style.display = 'block';
+    } else {
+      elements.audioPlayer.src = audioData; elements.customPlayer.style.display = 'flex';
+    }
+  }
+  function promptAudio(trigger) { const input = prompt('Nhập link âm thanh (.mp3) hoặc mã nhúng:'); const elements = getMediaElements(trigger); if (input && input.trim() !== '' && elements) { localStorage.setItem(`mediaAudio_${elements.id}`, input); showAudio(elements, input); } }
+  function setupCustomAudioPlayer(elements) { if (!elements || elements.box.dataset.playerSetup === 'true') return; const togglePlay = () => { if (elements.audioPlayer.paused) elements.audioPlayer.play(); else elements.audioPlayer.pause(); }; elements.customPlayer?.addEventListener('click', togglePlay); elements.audioPlayer?.addEventListener('play', () => elements.playBtn?.classList.add('playing')); elements.audioPlayer?.addEventListener('pause', () => elements.playBtn?.classList.remove('playing')); elements.audioPlayer?.addEventListener('ended', () => elements.playBtn?.classList.remove('playing')); elements.box.dataset.playerSetup = 'true'; }
+  function showApp(elements, url) { if (!elements) return; elements.appContainer.innerHTML = `<iframe src="${url}"></iframe>`; elements.appContainer.style.display = 'block'; updatePlaceholderVisibility(elements); }
+  function promptAppUrl(trigger) { const url = prompt('Nhập link của ứng dụng hoặc trang web để nhúng:'); const elements = getMediaElements(trigger); if (url && elements) { localStorage.setItem(`mediaApp_${elements.id}`, url); showApp(elements, url); } }
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.box[data-id]').forEach((box) => {
+      const elements = getMediaElements(box); if (!elements) return;
+      const imgData = localStorage.getItem(`mediaImage_${elements.id}`); if (imgData) showImage(elements, imgData);
+      const audioData = localStorage.getItem(`mediaAudio_${elements.id}`); if (audioData) showAudio(elements, audioData);
+      const appData = localStorage.getItem(`mediaApp_${elements.id}`); if (appData) showApp(elements, appData);
+      const mediaContentArea = box.querySelector('.media-content-area');
+      if (mediaContentArea && (!imgData && !appData && !audioData)) {
+        // do nothing
+      } else { if (mediaContentArea) updatePlaceholderVisibility(elements); }
+      setupCustomAudioPlayer(elements);
+    });
+  });
+</script>
+
+</body>
+</html>
