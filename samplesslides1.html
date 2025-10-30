@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>DUYslidesAI - Xác suất Toàn phần & Vi phân Toàn phần</title>
+
+  <!-- Font Awesome 5.15.4 -->
+  <link rel="stylesheet" href="https://c...content-available-to-author-only...e.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <!-- MathJax v3 (tex-svg) with global \displaystyle pre-processing -->
+  <script>
+    // Preprocess HTML to insert \displaystyle at the start of every math expression
+    function __insertDisplayStyle(html) {
+      if (!html) return html;
+      // 1) Temporarily protect $$...$$ blocks
+      const dispHolders = [];
+      html = html.replace(/\$\$([\s\S]*?)\$\$/g, (m, g1) => {
+        const idx = dispHolders.push(g1) - 1;
+        return `@@MJDISP${idx}@@`;
+      });
+      // 2) Protect \[...\] blocks
+      const brHolders = [];
+      html = html.replace(/\\\[([\s\S]*?)\\\]/g, (m, g1) => {
+        const idx = brHolders.push(g1) - 1;
+        return `@@MJBR${idx}@@`;
+      });
+      // 3) Protect \(...\) inline blocks
+      const parHolders = [];
+      html = html.replace(/\\\(([\s\S]*?)\\\)/g, (m, g1) => {
+        const idx = parHolders.push(g1) - 1;
+        return `@@MJPAR${idx}@@`;
+      });
+      // 4) Inline $...$ (avoid touching $$ by having protected them). Do not cross elements.
+      html = html.replace(/\$([^$]+?)\$/g, (m, g1) => {
+        const trimmed = g1.trimStart();
+        const needs = !trimmed.startsWith('\\displaystyle');
+        return '$' + (needs ? '\\displaystyle ' + g1 : g1) + '$';
+      });
+      // 5) Restore \(...\) with \displaystyle
+      html = html.replace(/@@MJPAR(\d+)@@/g, (m, i) => {
+        const content = parHolders[Number(i)] || '';
+        const trimmed = (content + '').trimStart();
+        const needs = !trimmed.startsWith('\\displaystyle');
+        return '\\(' + (needs ? '\\displaystyle ' + content : content) + '\\)';
+      });
+      // 6) Restore \[...\] with \displaystyle
+      html = html.replace(/@@MJBR(\d+)@@/g, (m, i) => {
+        const content = brHolders[Number(i)] || '';
+        const trimmed = (content + '').trimStart();
+        const needs = !trimmed.startsWith('\\displaystyle');
+        return '\\[' + (needs ? '\\displaystyle ' + content : content) + '\\]';
+      });
+      // 7) Restore $$...$$ with \displaystyle
+      html = html.replace(/@@MJDISP(\d+)@@/g, (m, i) => {
+        const content = dispHolders[Number(i)] || '';
+        const trimmed = (content + '').trimStart();
+        const needs = !trimmed.startsWith('\\displaystyle');
+        return '$$' + (needs ? '\\displaystyle ' + content : content) + '$$';
+      });
+      return html;
+    }
+
+    MathJax = {
+      tex: {
+        inlineMath: [["$","$"],["\\(","\\)"]],
+        displayMath: [["$$","$$"],["\\[","\\]"]]
+      },
+      svg: { fontCache: 'global' },
+      startup: {
+        ready: () => {
+          const root = document.querySelector('.container') || document.body;
+          if (root) {
+            root.innerHTML = __insertDisplayStyle(root.innerHTML);
+          }
+          MathJax.startup.defaultReady();
+        }
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://c...content-available-to-author-only...r.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <style>
+    :root {
+      --color-memo: #16a085; --bg-memo: #f0fdfa;
+      --color-activity: #d35400; --bg-activity: #fff8f2;
+      --color-example: #2980b9; --bg-example: #f2f9ff;
+      --color-exercise: #8e44ad; --bg-exercise: #fbf5ff;
+      --color-proof: #0077b6; --bg-proof: #f2fbff;
+      --color-note: #c29304; --bg-note: #fffcf2;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.7; background-color: #f0f2f5; color: #3a3a3a; padding: 20px; }
+    .container { max-width: 980px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+    .header h1 { font-size: 2.2rem; color: #1a5276; margin-bottom: 8px; }
+    .header .author { font-size: 1.05rem; color: #555; font-style: italic; }
+
+    .box { position: relative; padding: 16px; padding-top: 25px; padding-bottom: 35px; padding-right: 25px; margin: 20px 0; border: 1px solid #e0e0e0; border-left-width: 5px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .box-title { font-size: 1.16rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; }
+    .box-title .fas { margin-right: 10px; font-size: 1.05em; }
+    
+    .reset-trigger-left {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        cursor: pointer;
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+        transition: background-color 0.2s ease-in-out;
+    }
+    .reset-trigger-left:hover {
+        background-color: rgba(231, 76, 60, 0.3);
+    }
+
+    ul, ol { padding-left: 25px; }
+
+    .trigger-bar { height: 10px; width: 100%; cursor: pointer; opacity: 0.85; transition: opacity 0.2s; }
+    .trigger-bar:hover { opacity: 1; }
+    .trigger-top { position: absolute; top: 0; left: 0; width: calc(100% - 10px); border-top-left-radius: 8px; overflow: hidden; }
+    .trigger-image-link { background: linear-gradient(90deg, #9b59b6, #3498db, #1abc9c); }
+    .trigger-right { position: absolute; top: 0; right: 0; width: 10px; height: 100%; background: linear-gradient(180deg, #00c6ff, #0072ff); cursor: pointer; opacity: 0.85; transition: opacity 0.2s; border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+    .trigger-right:hover { opacity: 1; }
+    .triggers-bottom { position: absolute; bottom: 0; left: 0; width: calc(100% - 10px); border-bottom-left-radius: 8px; overflow: hidden; }
+    .trigger-audio { background: linear-gradient(90deg, #f1c40f, #e67e22, #d35400); }
+    .trigger-image-file { background: linear-gradient(90deg, #3498db, #2ecc71, #e74c3c, #f39c12); }
+
+    .media-content-area { background: rgba(249, 249, 249, 0.7); border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-top: 18px; display: none; }
+    .image-placeholder { display: flex; justify-content: center; align-items: center; min-height: 120px; border: 2px dashed #ccc; border-radius: 8px; color: #888; text-align: center; padding: 10px; font-size: 0.9em; }
+    .image-preview { max-width: 100%; max-height: 300px; display: none; margin: 0 auto; border-radius: 8px; }
+    .audio-container { margin-top: 15px; min-height: 25px; }
+    .embed-app-container { display: none; margin-top: 15px; }
+    .embed-app-container iframe { width: 100%; height: 450px; border: 1px solid #ddd; border-radius: 8px; }
+
+    .custom-audio-player { display: none; height: 24px; width: 100%; background: linear-gradient(90deg, #8e44ad, #3498db, #16a085); border-radius: 12px; cursor: pointer; padding: 0 15px; align-items: center; opacity: 0.9; }
+    .play-pause-btn { width: 0; height: 0; border-style: solid; border-width: 7px 0 7px 12px; border-color: transparent transparent transparent #fff; }
+    .play-pause-btn.playing { border-style: double; border-width: 0 0 0 10px; height: 14px; border-color: #fff; }
+    .embed-audio-container { display: none; }
+    .embed-audio-container iframe { border: none; border-radius: 8px; width: 100%; height: 60px; }
+    audio, .file-input { display: none; }
+    
+    .memo-box { background-color: var(--bg-memo); border-left-color: var(--color-memo); } .memo-box .box-title { color: var(--color-memo); }
+    .activity-box { background-color: var(--bg-activity); border-left-color: var(--color-activity); } .activity-box .box-title { color: var(--color-activity); }
+    .example-box { background-color: var(--bg-example); border-left-color: var(--color-example); } .example-box .box-title { color: var(--color-example); }
+    .exercise-box { background-color: var(--bg-exercise); border-left-color: var(--color-exercise); } .exercise-box .box-title { color: var(--color-exercise); }
+    .proof-box { background-color: var(--bg-proof); border-left-color: var(--color-proof); } .proof-box .box-title { color: var(--color-proof); }
+    .note-box { background-color: var(--bg-note); border-left-color: var(--color-note); } .note-box .box-title { color: var(--color-note); }
+
+    .section-container h2 { font-size: 1.6rem; color: #2874a6; margin: 34px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #3498db; }
+    .math-term strong { color: #c0392b; }
+    .math-term em { color: #7f8c8d; font-style: italic; }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background-color: #f7f9fa; font-weight: 600; }
+    h3 { font-size: 1.4rem; color: #34495e; margin-top: 25px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Xác suất Toàn phần & Vi phân Toàn phần:<br>Chung một ý tưởng về "Trọng số"</h1>
+    <p class="author">Duymt2 Đại học Mai Duy Khánh Linh</p>
+  </div>
+
+  <!-- Audio -->
+  <div class="box note-box" data-id="audio_lecture">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title">
+      <i class="fas fa-headphones"></i> Âm thanh bài giảng
+    </div>
+    <p>Bấm vào thanh bên dưới để nghe giảng hoặc dùng mã nhúng.</p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container">
+          <div class="custom-audio-player"><div class="play-pause-btn"></div></div>
+          <div class="embed-audio-container">
+              <iframe src="https://v...content-available-to-author-only...o.com/embed/119vGdZNNcdc?autoplay=0" allow="autoplay"></iframe>
+          </div>
+          <audio></audio>
+      </div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <!-- Meta Info -->
+  <div class="box note-box" data-id="meta_info">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title">
+      <i class="fas fa-info-circle"></i> Thông tin bài học
+    </div>
+    <p><strong>Lớp/Khối:</strong> 12 chuyên / Đại học năm 1<br>
+    <strong>Thời lượng:</strong> 20 phút<br>
+    <strong>Thiết bị/ĐDDH:</strong> Bảng, bút màu, máy chiếu (nếu có)</p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <!-- Goals -->
+  <div class="box memo-box" data-id="goals">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title">
+      <i class="fas fa-lightbulb"></i> Mục tiêu
+    </div>
+    <p>Sau buổi học này, chúng mình sẽ:</p>
+    <ul>
+      <li>"Nếm" được công thức <span class="math-term"><strong>xác suất toàn phần</strong> (<em>law of total probability</em>)</span> qua ví dụ trộn nước muối siêu dễ hiểu.</li>
+      <li>Nhận ra "linh hồn" của công thức chính là khái niệm <span class="math-term"><strong>trọng số</strong> (<em>weight</em>)</span>.</li>
+      <li>Thấy được mối liên hệ thú vị giữa hai công thức tưởng không liên quan: Xác suất Toàn phần và Vi phân Toàn phần.</li>
+    </ul>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="section-container"><h2>1) Từ khóa & khái niệm</h2></div>
+
+  <div class="box note-box" data-id="keywords">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title">
+      <i class="fas fa-key"></i> Bảng thuật ngữ
+    </div>
+    <table>
+      <thead><tr><th>Thuật ngữ</th><th>Diễn giải nhanh (có thể thêm ẩn dụ)</th></tr></thead>
+      <tbody>
+        <tr><td><span class="math-term"><strong>Trọng số</strong> (<em>weight</em>)</span></td><td>"Sức nặng" hay "mức độ quan trọng" của mỗi thành phần. Ví dụ: ly nước muối to hơn thì "trọng số" lớn hơn khi pha trộn.</td></tr>
+        <tr><td><span class="math-term"><strong>Xác suất toàn phần</strong> (<em>Law of total probability</em>)</span></td><td>Cách tính xác suất chung của một sự kiện bằng cách cộng các xác suất thành phần, mỗi cái đã được "cân đo" bởi trọng số của nó.</td></tr>
+        <tr><td><span class="math-term"><strong>Vi phân toàn phần</strong> (<em>Total differential</em>)</span></td><td>Cách tính sự thay đổi tổng thể của một hàm số, bằng cách cộng các thay đổi nhỏ từ mỗi biến, cũng được "cân đo" bởi trọng số riêng.</td></tr>
+      </tbody>
+    </table>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="box activity-box" data-id="warmup">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title">
+      <i class="fas fa-laugh-beam"></i> Khởi động vui: Bài toán "Đầu bếp pha nước chấm"
+    </div>
+    <p>Hãy tưởng tượng bạn có hai bát nước mắm:</p>
+    <ul>
+      <li>Bát 1 (to, 3 lít): Vị nhạt, nồng độ muối 10%.</li>
+      <li>Bát 2 (nhỏ, 1 lít): Vị mặn, nồng độ muối 50%.</li>
+    </ul>
+    <p>Nếu bạn đổ cả hai bát vào một cái nồi lớn, nồng độ muối của nồi nước chấm cuối cùng là bao nhiêu? Liệu có phải là trung bình cộng $(10\% + 50\%) / 2 = 30\%$ không?</p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="section-container"><h2>2) Nội dung cốt lõi</h2></div>
+  <p>Rõ ràng là không phải 30\% rồi! Vì bát nước nhạt to hơn rất nhiều, nó phải "ảnh hưởng" nhiều hơn đến kết quả cuối cùng. Cái "sự ảnh hưởng" đó chính là <strong>trọng số</strong>!</p>
+  
+  <h3>2.1. Công thức Xác suất Toàn phần</h3>
+  <p>Nồng độ muối thực ra cũng là một dạng xác suất (tỉ lệ muối trên toàn dung dịch). Cách tính nồng độ hỗn hợp chính là tư tưởng của công thức xác suất toàn phần.</p>
+
+  <div class="box note-box" data-id="def_total_prob">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-scroll"></i> Định nghĩa
+      </div>
+      <p>Xác suất của một biến cố $A$ có thể được tính bằng tổng các xác suất có điều kiện của $A$ khi các biến cố $B_i$ xảy ra, nhân với xác suất của từng biến cố $B_i$ đó. Ở đây, các biến cố $B_i$ phải tạo thành một <span class="math-term"><strong>phân hoạch</strong> (<em>partition</em>)</span> của không gian mẫu (tức là chúng rời nhau và hợp lại thì phủ kín tất cả các khả năng).</p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="box example-box" data-id="total_prob_theorem">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-superscript"></i> Định lý: Công thức Xác suất Toàn phần
+      </div>
+      <p>Giả sử $B_1, B_2, \dots, B_n$ là một phân hoạch của không gian mẫu. Khi đó, với mọi biến cố $A$:</p>
+      $$ P(A) = \sum_{i=1}^{n} P(A|B_i)P(B_i) $$
+      <p>Trong đó:</p>
+      <ul><li>$P(B_i)$ là <strong>trọng số</strong> của mỗi trường hợp.</li><li>$P(A|B_i)$ là xác suất của $A$ trong trường hợp đó.</li></ul>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="box example-box" data-id="mixing_example">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-flask"></i> Ví dụ: Giải bài toán "Đầu bếp pha nước chấm"
+      </div>
+      <p>Áp dụng công thức trên để tìm $P(\text{Muối})$ trong hỗn hợp cuối cùng.</p>
+      <ul>
+          <li><strong>Biến cố A</strong>: Bốc ngẫu nhiên một phân tử trong nồi, nó là phân tử muối. Ta cần tìm $P(A)$.</li>
+          <li><strong>Phân hoạch $B_i$</strong>: Phân tử đó đến từ đâu?
+              <ul>
+                  <li>$B_1$: Phân tử đến từ Bát 1. Trọng số $P(B_1) = \frac{3}{4}$.</li>
+                  <li>$B_2$: Phân tử đến từ Bát 2. Trọng số $P(B_2) = \frac{1}{4}$.</li>
+              </ul>
+          </li>
+          <li><strong>Xác suất có điều kiện $P(A|B_i)$</strong>:
+              <ul>
+                  <li>$P(A|B_1)$: Nồng độ Bát 1 = 10% hay 0.1.</li>
+                  <li>$P(A|B_2)$: Nồng độ Bát 2 = 50% hay 0.5.</li>
+              </ul>
+          </li>
+      </ul>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="box proof-box" data-id="mixing_solution">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-check"></i> Lời giải
+      </div>
+      <p>Áp dụng công thức xác suất toàn phần:</p>
+      $$ \begin{aligned}
+      P(\text{Muối}) &= P(\text{Muối}|B_1)P(B_1) + P(\text{Muối}|B_2)P(B_2) \\
+      &= (0.1) \cdot \left(\frac{3}{4}\right) + (0.5) \cdot \left(\frac{1}{4}\right) = 0.20
+      \end{aligned} $$
+      <p>Vậy, nồng độ muối cuối cùng là 20%. Hợp lý vì lượng nước nhạt chiếm tới 3/4 tổng dung dịch.</p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <h3>2.2. Người anh em trong Giải tích: Vi phân Toàn phần</h3>
+  <p>Thật bất ngờ, ý tưởng "tổng có trọng số" này cũng xuất hiện trong giải tích! Xét một hàm số $z = f(x, y)$. Sự thay đổi tổng thể của $z$, ký hiệu là $dz$, phụ thuộc vào mức độ "nhạy cảm" của $z$ đối với từng biến $x, y$. Mức độ nhạy cảm này chính là đạo hàm riêng, và nó đóng vai trò y hệt <strong>trọng số</strong>.</p>
+  
+  <div class="box example-box" data-id="total_diff_theorem">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-superscript"></i> Định lý: Công thức Vi phân Toàn phần
+      </div>
+      $$ dz = \left(\frac{\partial z}{\partial x}\right)dx + \left(\frac{\partial z}{\partial y}\right)dy $$
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="box note-box" data-id="comparison">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-link"></i> Một ý tưởng, hai hình hài!
+      </div>
+      <p>So sánh hai công thức:</p>
+      <ul>
+          <li><strong>Xác suất:</strong> $P(A) = P(A|\mathbf{B_1})P(\mathbf{B_1}) + P(A|\mathbf{B_2})P(\mathbf{B_2}) + \dots$</li>
+          <li><strong>Giải tích:</strong> $dz = \left(\frac{\partial z}{\partial \mathbf{x}}\right)d\mathbf{x} + \left(\frac{\partial z}{\partial \mathbf{y}}\right)d\mathbf{y} + \dots$</li>
+      </ul>
+      <p>Cả hai đều diễn tả nguyên lý: "Cái toàn thể bằng tổng các bộ phận, mỗi bộ phận được nhân với trọng số của chính nó".</p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="section-container"><h2>3) Bài tập tự luyện</h2></div>
+
+  <div class="box exercise-box" data-id="self_practice">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)"></div>
+    <div class="box-title">
+      <i class="fas fa-puzzle-piece"></i> Bài tập tự luyện
+    </div>
+    <ol>
+      <li><strong>(Điểm trung bình)</strong> Môn Toán có 3 cột điểm: miệng (hệ số 1), 15 phút (hệ số 1), 1 tiết (hệ số 2). Bạn được lần lượt 8, 7, và 10. Dùng tư duy "trọng số" để tính điểm trung bình.</li>
+      <li><strong>(Nhà máy sản xuất)</strong> Dây chuyền I sản xuất 60% sản phẩm (lỗi 3%). Dây chuyền II sản xuất 40% (lỗi 5%).
+        <ol type="a"><li>Tính xác suất một sản phẩm ngẫu nhiên bị lỗi.</li><li>Bạn đã dùng công thức nào?</li></ol>
+      </li>
+      <li><strong>(Nâng cao)</strong> Tìm một ví dụ khác về tổng có trọng số trong vật lý, kinh tế...</li>
+    </ol>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="section-container"><h2>4) Gợi ý lời giải</h2></div>
+  
+  <div class="box proof-box" data-id="answers">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-check"></i> Gợi ý/Đáp án
+      </div>
+      <ol>
+          <li>Tổng trọng số: $1+1+2=4$. Điểm TB = $\frac{8 \cdot 1 + 7 \cdot 1 + 10 \cdot 2}{4} = 8.75$.</li>
+          <li>a) $P(\text{Lỗi}) = (0.03)(0.6) + (0.05)(0.4) = 0.038 = 3.8\%$.<br>b) Công thức xác suất toàn phần.</li>
+          <li>Gợi ý: Khối tâm, chỉ số giá tiêu dùng (CPI),...</li>
+      </ol>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="box note-box" data-id="pedagogy_note">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-chalkboard-teacher"></i> Lưu ý sư phạm
+      </div>
+      <p>Luôn nhấn mạnh: khi một đại lượng "tổng" được tạo thành từ các thành phần "con" không đều nhau, ta cần một <strong>phép cộng có trọng số</strong>. Đây là tư duy cốt lõi xuyên suốt nhiều lĩnh vực khoa học.</p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+</div>
+
+<script>
+  // HÀM RESET TỪNG SLIDE
+  function resetSingleSlide(triggerElement) {
+    const box = triggerElement.closest('.box');
+    if (!box) return;
+    const slideId = box.dataset.id;
+    if (!slideId) return;
+
+    // Lấy text của tiêu đề để hiển thị trong thông báo xác nhận
+    const titleText = box.querySelector('.box-title').innerText.trim();
+    if (confirm(`Bạn có chắc muốn reset nội dung của slide "${titleText}" không?`)) {
+      localStorage.removeItem(`mediaImage_${slideId}`);
+      localStorage.removeItem(`mediaAudio_${slideId}`);
+      localStorage.removeItem(`mediaApp_${slideId}`);
+      location.reload();
+    }
+  }
+
+
+  function getMediaElements(triggerElement) {
+    const box = triggerElement.closest('.box'); if (!box) return null;
+    return {
+      id: box.dataset.id, box: box,
+      mediaArea: box.querySelector('.media-content-area'),
+      preview: box.querySelector('.image-preview'), placeholder: box.querySelector('.image-placeholder'),
+      audioContainer: box.querySelector('.audio-container'), customPlayer: box.querySelector('.custom-audio-player'),
+      embedAudioContainer: box.querySelector('.audio-container .embed-audio-container'), audioPlayer: box.querySelector('audio'),
+      playBtn: box.querySelector('.play-pause-btn'), fileInput: box.querySelector('.file-input'),
+      appContainer: box.querySelector('.embed-app-container'),
+    };
+  }
+  function updatePlaceholderVisibility(elements) {
+    if (!elements || !elements.placeholder || !elements.mediaArea) return;
+    const imageVisible = elements.preview && elements.preview.style.display === 'block';
+    const appVisible = elements.appContainer && elements.appContainer.style.display === 'block';
+    const audioVisible = (elements.customPlayer && elements.customPlayer.style.display !== 'none') || (elements.embedAudioContainer && elements.embedAudioContainer.style.display !== 'none');
+    
+    if (imageVisible || appVisible || audioVisible) {
+        elements.mediaArea.style.display = 'block';
+    } else {
+        elements.mediaArea.style.display = 'none';
+    }
+    elements.placeholder.style.display = (imageVisible || appVisible) ? 'none' : 'flex';
+  }
+  function showImage(elements, src) { if (!elements) return; elements.preview.src = src; elements.preview.style.display = 'block'; updatePlaceholderVisibility(elements); }
+  function promptImageUrl(trigger) { const url = prompt('Nhập link ảnh (URL):'); const elements = getMediaElements(trigger); if (url && elements) { localStorage.setItem(`mediaImage_${elements.id}`, url); showImage(elements, url); } }
+  function handleFileInput(input) { const file = input.files[0]; const elements = getMediaElements(input); if (file && elements) { const reader = new FileReader(); reader.onload = (e) => { localStorage.setItem(`mediaImage_${elements.id}`, e.target.result); showImage(elements, e.target.result); }; reader.readAsDataURL(file); } }
+  function triggerFileInput(trigger) { const elements = getMediaElements(trigger); if (elements && elements.fileInput) { elements.fileInput.click(); } }
+  function showAudio(elements, audioData) {
+    if (!elements) return; 
+    elements.customPlayer.style.display = 'none'; 
+    elements.embedAudioContainer.style.display = 'none'; 
+    elements.embedAudioContainer.innerHTML = ''; 
+    elements.audioPlayer.src = '';
+    
+    if (audioData.trim().startsWith('<')) { // embed code
+      const cleaned = audioData.replace(/<br.*?>\s*<a.*?voca\.ro.*?<\/a>/i, '');
+      elements.embedAudioContainer.innerHTML = cleaned; 
+      elements.embedAudioContainer.style.display = 'block';
+    } else { // mp3 link
+      elements.audioPlayer.src = audioData; 
+      elements.customPlayer.style.display = 'flex';
+    }
+    updatePlaceholderVisibility(elements);
+  }
+  function promptAudio(trigger) { const input = prompt('Nhập link âm thanh (.mp3) hoặc mã nhúng:'); const elements = getMediaElements(trigger); if (input && input.trim() !== '' && elements) { localStorage.setItem(`mediaAudio_${elements.id}`, input); showAudio(elements, input); } }
+  function setupCustomAudioPlayer(elements) { if (!elements || elements.box.dataset.playerSetup === 'true') return; const togglePlay = () => { if (elements.audioPlayer.paused) elements.audioPlayer.play(); else elements.audioPlayer.pause(); }; elements.customPlayer?.addEventListener('click', togglePlay); elements.audioPlayer?.addEventListener('play', () => elements.playBtn?.classList.add('playing')); elements.audioPlayer?.addEventListener('pause', () => elements.playBtn?.classList.remove('playing')); elements.audioPlayer?.addEventListener('ended', () => elements.playBtn?.classList.remove('playing')); elements.box.dataset.playerSetup = 'true'; }
+  function showApp(elements, url) { if (!elements) return; elements.appContainer.innerHTML = `<iframe src="${url}"></iframe>`; elements.appContainer.style.display = 'block'; updatePlaceholderVisibility(elements); }
+  function promptAppUrl(trigger) { const url = prompt('Nhập link của ứng dụng hoặc trang web để nhúng:'); const elements = getMediaElements(trigger); if (url && elements) { localStorage.setItem(`mediaApp_${elements.id}`, url); showApp(elements, url); } }
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.box[data-id]').forEach((box) => {
+      const elements = getMediaElements(box); if (!elements) return;
+      
+      const imgData = localStorage.getItem(`mediaImage_${elements.id}`); if (imgData) showImage(elements, imgData);
+      const audioData = localStorage.getItem(`mediaAudio_${elements.id}`); if (audioData) showAudio(elements, audioData);
+      const appData = localStorage.getItem(`mediaApp_${elements.id}`); if (appData) showApp(elements, appData);
+      
+      const embedAudio = elements.embedAudioContainer?.querySelector('iframe');
+      if (embedAudio && embedAudio.getAttribute('src')) {
+          showAudio(elements, embedAudio.outerHTML);
+      }
+
+      setupCustomAudioPlayer(elements);
+    });
+  });
+</script>
+
+</body>
+</html>
