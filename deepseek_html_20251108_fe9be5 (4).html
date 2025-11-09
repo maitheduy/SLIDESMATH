@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Bài giảng</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            min-height: 600px;
+        }
+
+        .sidebar {
+            background: #2c3e50;
+            color: white;
+            padding: 25px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .subject-list {
+            list-style: none;
+        }
+
+        .subject-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .subject-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .subject-item.active {
+            background: #3498db;
+        }
+
+        .subject-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .subject-count {
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .subject-delete {
+            background: rgba(231, 76, 60, 0.8);
+            color: white;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.3s ease;
+            font-size: 0.7rem;
+        }
+
+        .subject-item:hover .subject-delete {
+            opacity: 1;
+        }
+
+        .main-content {
+            padding: 30px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .content-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lessons-count {
+            background: #3498db;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .lessons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .lesson-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid #3498db;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 480px;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+
+        .lesson-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            flex-shrink: 0;
+        }
+
+        .lesson-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .lesson-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        .lesson-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .lesson-name {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-right: 10px;
+            line-height: 1.3;
+            flex-grow: 1;
+        }
+
+        .lesson-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .lesson-action {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            color: #7f8c8d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lesson-action:hover {
+            background: #ecf0f1;
+            color: #3498db;
+        }
+
+        .lesson-description {
+            color: #5a6c7d;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 120px;
+            padding-right: 5px;
+        }
+
+        .lesson-description::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .lesson-description::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 2px;
+        }
+
+        .lesson-description::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+
+        .lesson-description::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        .lesson-link {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .lesson-link:hover {
+            background: #219a52;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .lesson-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+            color: #7f8c8d;
+            grid-column: 1 / -1;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+        }
+
+        .fab-main {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .fab-main:hover {
+            transform: scale(1.1);
+            background: #c0392b;
+        }
+
+        .fab-options {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .fab-option {
+            background: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .fab-option:hover {
+            background: #2980b9;
+            transform: translateX(-5px);
+        }
+
+        .fab-options.show {
+            display: flex;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #7f8c8d;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .image-upload-section {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+        }
+
+        .image-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .image-preview.show {
+            display: block;
+        }
+
+        .upload-options {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .upload-option {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .upload-option:hover {
+            background: #2980b9;
+        }
+
+        .upload-option.embed {
+            background: #9b59b6;
+        }
+
+        .upload-option.embed:hover {
+            background: #8e44ad;
+        }
+
+        .upload-option.url {
+            background: #27ae60;
+        }
+
+        .upload-option.url:hover {
+            background: #219a52;
+        }
+
+        .image-input-group {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .image-input-group.show {
+            display: block;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+            
+            .main-content {
+                order: 1;
+            }
+            
+            .lessons-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .fab-options {
+                right: auto;
+                left: 0;
+            }
+            
+            .content-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .upload-options {
+                flex-direction: column;
+            }
+            
+            .lesson-card {
+                height: auto;
+                min-height: 480px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-book-open"></i> Quản lý Bài giảng</h1>
+            <p>Tổ chức bài giảng theo môn học với hình ảnh đa dạng</p>
+        </div>
+
+        <div class="app-container">
+            <div class="sidebar">
+                <div class="sidebar-title">
+                    <i class="fas fa-list"></i>
+                    <span>Môn học</span>
+                </div>
+                <ul class="subject-list" id="subjectList">
+                    <!-- Subjects will be populated by JavaScript -->
+                </ul>
+            </div>
+
+            <div class="main-content">
+                <div class="content-header">
+                    <h2 class="content-title" id="currentSubject">
+                        <i class="fas fa-book"></i> 
+                        <span id="subjectName">Tất cả bài giảng</span>
+                        <span class="lessons-count" id="lessonsCount">0</span>
+                    </h2>
+                </div>
+
+                <div class="lessons-grid" id="lessonsGrid">
+                    <!-- Lesson cards will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab-container">
+        <div class="fab-options" id="fabOptions">
+            <div class="fab-option" onclick="showAddSubjectModal()">
+                <i class="fas fa-folder-plus"></i>
+                <span>Thêm môn học</span>
+            </div>
+            <div class="fab-option" onclick="showAddLessonModal()">
+                <i class="fas fa-file-plus"></i>
+                <span>Thêm bài giảng</span>
+            </div>
+        </div>
+        <div class="fab-main" id="fabMain">
+            <i class="fas fa-plus"></i>
+        </div>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div class="modal" id="addSubjectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Thêm môn học</h3>
+                <button class="close-btn" onclick="hideAddSubjectModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="subjectNameInput">Tên môn học</label>
+                <input type="text" id="subjectNameInput" placeholder="Nhập tên môn học...">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="hideAddSubjectModal()">Hủy</button>
+                <button class="btn btn-primary" onclick="addNewSubject()">Thêm môn học</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Lesson Modal -->
+    <div class="modal" id="addLessonModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="lessonModalTitle">Thêm bài giảng mới</h3>
+                <button class="close-btn" onclick="hideAddLessonModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="lessonNameInput">Tên bài giảng *</label>
+                <input type="text" id="lessonNameInput" placeholder="Nhập tên bài giảng...">
+            </div>
+            <div class="form-group">
+                <label for="lessonSubjectSelect">Môn học *</label>
+                <select id="lessonSubjectSelect">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="lessonDescriptionInput">Mô tả</label>
+                <textarea id="lessonDescriptionInput" placeholder="Mô tả ngắn về bài giảng..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="lessonLinkInput">Đường link bài giảng *</label>
+                <input type="url" id="lessonLinkInput" placeholder="https://example.com/...">
+                <div class="help-text">Dán đường link đến bài giảng HTML hoặc trang web</div>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div class="form-group">
+                <label>Hình ảnh bài giảng</label>
+                <div class="image-upload-section">
+                    <img id="imagePreview" class="image-preview" alt="Preview">
+                    <div id="noImageMessage">
+                        <i class="fas fa-image" style="font-size: 3rem; color: #bdc3c7; margin-bottom: 10px;"></i>
+                        <p style="color: #7f8c8d; margin-bottom: 15px;">Chưa có hình ảnh</p>
+                    </div>
+                    
+                    <div class="upload-options">
+                        <button class="upload-option" onclick="showUploadOption('file')">
+                            <i class="fas fa-upload"></i>
+                            <span>Tải lên từ máy</span>
+                        </button>
+                        <button class="upload-option url" onclick="showUploadOption('url')">
+                            <i class="fas fa-link"></i>
+                            <span>Nhập URL</span>
+                        </button>
+                        <button class="upload-option embed" onclick="showUploadOption('embed')">
+                            <i class="fas fa-code"></i>
+                            <span>Mã nhúng</span>
+                        </button>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div id="fileUploadGroup" class="image-input-group">
+                        <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
+                        <button class="btn btn-primary" onclick="document.getElementById('imageFileInput').click()" style="width: 100%;">
+                            <i class="fas fa-folder-open"></i> Chọn hình ảnh
+                        </button>
+                        <div class="help-text">Chọn hình ảnh từ máy tính của bạn (JPG, PNG, GIF)</div>
+                    </div>
+
+                    <!-- URL Input -->
+                    <div id="urlUploadGroup" class="image-input-group">
+                        <input type="url" id="imageUrlInput" placeholder="https://example.com/image.jpg">
+                        <div class="help-text">Nhập URL trực tiếp đến hình ảnh</div>
+                    </div>
+
+                    <!-- Embed Input -->
+                    <div id="embedUploadGroup" class="image-input-group">
+                        <textarea id="imageEmbedInput" placeholder='&lt;img src="https://example.com/image.jpg" alt="Mô tả"&gt;' rows="3"></textarea>
+                        <div class="help-text">Dán mã HTML embed hoặc iframe</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="hideAddLessonModal()">Hủy</button>
+                <button class="btn btn-primary" id="saveLessonBtn" onclick="saveLesson()">Thêm bài giảng</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Storage keys
+        const STORAGE_KEYS = {
+            SUBJECTS: 'lesson_subjects',
+            LESSONS: 'lesson_lessons'
+        };
+
+        // Default data
+        const defaultSubjects = [
+            { id: 'all', name: 'Tất cả bài giảng', icon: 'fas fa-th-large', count: 0 },
+            { id: 'math', name: 'Toán học', icon: 'fas fa-calculator', count: 0 },
+            { id: 'physics', name: 'Vật lý', icon: 'fas fa-atom', count: 0 },
+            { id: 'programming', name: 'Lập trình', icon: 'fas fa-code', count: 0 }
+        ];
+
+        const defaultLessons = [
+            {
+                id: 1,
+                name: "Đạo hàm và ứng dụng",
+                description: "Tìm hiểu về đạo hàm và các ứng dụng trong toán học. Bài giảng này sẽ hướng dẫn bạn từ những khái niệm cơ bản nhất về đạo hàm cho đến các ứng dụng thực tế trong cuộc sống và các bài toán phức tạp.",
+                subject: "math",
+                link: "https://example.com/derivative",
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'%3E%3Crect width='400' height='200' fill='%23667eea'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='white'%3EToán học%3C/text%3E%3C/svg%3E",
+                created: "2024-01-15"
+            },
+            {
+                id: 2,
+                name: "Cơ học lượng tử",
+                description: "Giới thiệu về cơ học lượng tử và các nguyên lý cơ bản. Khám phá thế giới vi mô với các hiện tượng lượng tử kỳ lạ như nguyên lý bất định, lưỡng tính sóng-hạt, và sự chồng chất trạng thái.",
+                subject: "physics",
+                link: "https://example.com/quantum",
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'%3E%3Crect width='400' height='200' fill='%239b59b6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='white'%3EVật lý%3C/text%3E%3C/svg%3E",
+                created: "2024-01-20"
+            }
+        ];
+
+        // Global variables
+        let subjects = [];
+        let lessons = [];
+        let currentSubjectId = 'all';
+        let currentEditLessonId = null;
+        let currentImageData = null;
+
+        // DOM Elements
+        const subjectList = document.getElementById('subjectList');
+        const lessonsGrid = document.getElementById('lessonsGrid');
+        const subjectName = document.getElementById('subjectName');
+        const lessonsCount = document.getElementById('lessonsCount');
+        const fabMain = document.getElementById('fabMain');
+        const fabOptions = document.getElementById('fabOptions');
+        const addSubjectModal = document.getElementById('addSubjectModal');
+        const addLessonModal = document.getElementById('addLessonModal');
+        const lessonSubjectSelect = document.getElementById('lessonSubjectSelect');
+
+        // Image upload elements
+        const imagePreview = document.getElementById('imagePreview');
+        const noImageMessage = document.getElementById('noImageMessage');
+        const imageFileInput = document.getElementById('imageFileInput');
+        const imageUrlInput = document.getElementById('imageUrlInput');
+        const imageEmbedInput = document.getElementById('imageEmbedInput');
+        const fileUploadGroup = document.getElementById('fileUploadGroup');
+        const urlUploadGroup = document.getElementById('urlUploadGroup');
+        const embedUploadGroup = document.getElementById('embedUploadGroup');
+
+        // Storage functions
+        function loadFromStorage(key) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
+            } catch (error) {
+                console.error('Error loading from storage:', error);
+                return null;
+            }
+        }
+
+        function saveToStorage(key, data) {
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+                return true;
+            } catch (error) {
+                console.error('Error saving to storage:', error);
+                alert('Lỗi khi lưu dữ liệu. Có thể bộ nhớ đã đầy.');
+                return false;
+            }
+        }
+
+        function saveAllData() {
+            const success1 = saveToStorage(STORAGE_KEYS.SUBJECTS, subjects);
+            const success2 = saveToStorage(STORAGE_KEYS.LESSONS, lessons);
+            return success1 && success2;
+        }
+
+        // Initialize the application
+        function initApp() {
+            // Load data
+            subjects = loadFromStorage(STORAGE_KEYS.SUBJECTS) || [...defaultSubjects];
+            lessons = loadFromStorage(STORAGE_KEYS.LESSONS) || [...defaultLessons];
+            
+            updateSubjectCounts();
+            renderSubjects();
+            renderLessons('all');
+            setupEventListeners();
+            populateSubjectSelect();
+        }
+
+        // Update lesson counts for each subject
+        function updateSubjectCounts() {
+            subjects.forEach(subject => {
+                if (subject.id === 'all') {
+                    subject.count = lessons.length;
+                } else {
+                    subject.count = lessons.filter(lesson => lesson.subject === subject.id).length;
+                }
+            });
+        }
+
+        // Render subject list
+        function renderSubjects() {
+            subjectList.innerHTML = '';
+            
+            subjects.forEach(subject => {
+                const subjectItem = document.createElement('li');
+                subjectItem.className = `subject-item ${subject.id === currentSubjectId ? 'active' : ''}`;
+                subjectItem.dataset.subject = subject.id;
+                subjectItem.innerHTML = `
+                    <div class="subject-name">
+                        <i class="${subject.icon}"></i>
+                        <span>${subject.name}</span>
+                    </div>
+                    <span class="subject-count">${subject.count}</span>
+                    ${subject.id !== 'all' ? `<button class="subject-delete" onclick="deleteSubject('${subject.id}')"><i class="fas fa-times"></i></button>` : ''}
+                `;
+                subjectList.appendChild(subjectItem);
+            });
+        }
+
+        // Render lessons grid
+        function renderLessons(subjectId) {
+            currentSubjectId = subjectId;
+            
+            let filteredLessons = lessons;
+            
+            // Filter by subject
+            if (subjectId !== 'all') {
+                filteredLessons = lessons.filter(lesson => lesson.subject === subjectId);
+            }
+            
+            // Update UI
+            const currentSubject = subjects.find(subject => subject.id === subjectId);
+            subjectName.textContent = currentSubject.name;
+            lessonsCount.textContent = filteredLessons.length;
+            
+            // Render lesson cards
+            lessonsGrid.innerHTML = '';
+            
+            if (filteredLessons.length === 0) {
+                lessonsGrid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-book"></i>
+                        <h3>Không có bài giảng nào</h3>
+                        <p>Hãy thêm bài giảng đầu tiên cho môn học này</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredLessons.forEach(lesson => {
+                const subject = subjects.find(s => s.id === lesson.subject);
+                
+                const lessonCard = document.createElement('div');
+                lessonCard.className = 'lesson-card';
+                
+                // Create image section
+                let imageSection = '';
+                if (lesson.image) {
+                    imageSection = `
+                        <div class="lesson-image">
+                            <img src="${lesson.image}" alt="${lesson.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-image\\'></i><h3>${lesson.name}</h3>';">
+                        </div>
+                    `;
+                } else {
+                    imageSection = `
+                        <div class="lesson-image">
+                            <i class="fas fa-image"></i>
+                            <h3>${lesson.name}</h3>
+                        </div>
+                    `;
+                }
+                
+                lessonCard.innerHTML = `
+                    <button class="delete-btn" onclick="deleteLesson(${lesson.id})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    ${imageSection}
+                    <div class="lesson-content">
+                        <div class="lesson-header">
+                            <h3 class="lesson-name">${lesson.name}</h3>
+                            <div class="lesson-actions">
+                                <button class="lesson-action" onclick="editLesson(${lesson.id})" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="lesson-action" onclick="openLessonLink(${lesson.id})" title="Mở bài giảng">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="lesson-description">
+                            ${lesson.description || 'Không có mô tả'}
+                        </div>
+                        <a href="${lesson.link}" target="_blank" class="lesson-link">
+                            <i class="fas fa-external-link-alt"></i> Mở bài giảng
+                        </a>
+                    </div>
+                `;
+                lessonsGrid.appendChild(lessonCard);
+            });
+        }
+
+        // Open lesson link
+        function openLessonLink(lessonId) {
+            const lesson = lessons.find(l => l.id === lessonId);
+            if (!lesson) return;
+
+            window.open(lesson.link, '_blank');
+        }
+
+        // Edit lesson
+        function editLesson(lessonId) {
+            const lesson = lessons.find(l => l.id === lessonId);
+            if (!lesson) return;
+
+            currentEditLessonId = lessonId;
+            
+            // Fill form with lesson data
+            document.getElementById('lessonModalTitle').textContent = 'Chỉnh sửa bài giảng';
+            document.getElementById('lessonNameInput').value = lesson.name;
+            document.getElementById('lessonSubjectSelect').value = lesson.subject;
+            document.getElementById('lessonDescriptionInput').value = lesson.description || '';
+            document.getElementById('lessonLinkInput').value = lesson.link;
+            document.getElementById('saveLessonBtn').textContent = 'Cập nhật bài giảng';
+            
+            // Set image preview
+            if (lesson.image) {
+                imagePreview.src = lesson.image;
+                imagePreview.classList.add('show');
+                noImageMessage.style.display = 'none';
+                currentImageData = lesson.image;
+            } else {
+                imagePreview.classList.remove('show');
+                noImageMessage.style.display = 'block';
+                currentImageData = null;
+            }
+            
+            // Hide all upload options
+            hideAllUploadOptions();
+            
+            addLessonModal.classList.add('show');
+        }
+
+        // Delete lesson
+        function deleteLesson(lessonId) {
+            if (confirm('Bạn có chắc chắn muốn xóa bài giảng này?')) {
+                lessons = lessons.filter(lesson => lesson.id !== lessonId);
+                updateSubjectCounts();
+                renderSubjects();
+                saveAllData();
+                renderLessons(currentSubjectId);
+                alert('Đã xóa bài giảng thành công!');
+            }
+        }
+
+        // Delete subject
+        function deleteSubject(subjectId) {
+            if (subjectId === 'all') return;
+            
+            // Get all lessons in this subject
+            const subjectLessons = lessons.filter(lesson => lesson.subject === subjectId);
+            
+            if (subjectLessons.length > 0) {
+                if (!confirm(`Môn học này có ${subjectLessons.length} bài giảng. Tất cả sẽ bị xóa. Bạn có chắc chắn?`)) {
+                    return;
+                }
+                // Remove lessons
+                lessons = lessons.filter(lesson => lesson.subject !== subjectId);
+            }
+            
+            // Remove subject
+            subjects = subjects.filter(subject => subject.id !== subjectId);
+            
+            updateSubjectCounts();
+            renderSubjects();
+            populateSubjectSelect();
+            saveAllData();
+            
+            renderLessons('all');
+            alert('Đã xóa môn học thành công!');
+        }
+
+        // Populate subject select
+        function populateSubjectSelect() {
+            lessonSubjectSelect.innerHTML = '';
+            subjects.forEach(subject => {
+                if (subject.id !== 'all') {
+                    const option = document.createElement('option');
+                    option.value = subject.id;
+                    option.textContent = subject.name;
+                    lessonSubjectSelect.appendChild(option);
+                }
+            });
+        }
+
+        // Image upload functions
+        function showUploadOption(type) {
+            hideAllUploadOptions();
+            
+            switch(type) {
+                case 'file':
+                    fileUploadGroup.classList.add('show');
+                    break;
+                case 'url':
+                    urlUploadGroup.classList.add('show');
+                    break;
+                case 'embed':
+                    embedUploadGroup.classList.add('show');
+                    break;
+            }
+        }
+
+        function hideAllUploadOptions() {
+            fileUploadGroup.classList.remove('show');
+            urlUploadGroup.classList.remove('show');
+            embedUploadGroup.classList.remove('show');
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImageData = e.target.result;
+                    updateImagePreview(currentImageData);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleUrlUpload() {
+            const url = imageUrlInput.value.trim();
+            if (url) {
+                // Test if the URL is valid
+                const img = new Image();
+                img.onload = function() {
+                    currentImageData = url;
+                    updateImagePreview(url);
+                };
+                img.onerror = function() {
+                    alert('URL hình ảnh không hợp lệ hoặc không thể truy cập');
+                    imageUrlInput.value = '';
+                };
+                img.src = url;
+            }
+        }
+
+        function handleEmbedUpload() {
+            const embedCode = imageEmbedInput.value.trim();
+            if (embedCode) {
+                // Extract image URL from embed code
+                const srcMatch = embedCode.match(/src=["']([^"']+)["']/);
+                if (srcMatch && srcMatch[1]) {
+                    const imageUrl = srcMatch[1];
+                    const img = new Image();
+                    img.onload = function() {
+                        currentImageData = imageUrl;
+                        updateImagePreview(imageUrl);
+                    };
+                    img.onerror = function() {
+                        alert('Không thể tải hình ảnh từ mã nhúng');
+                    };
+                    img.src = imageUrl;
+                } else {
+                    alert('Mã nhúng không chứa URL hình ảnh hợp lệ');
+                }
+            }
+        }
+
+        function updateImagePreview(imageSrc) {
+            imagePreview.src = imageSrc;
+            imagePreview.classList.add('show');
+            noImageMessage.style.display = 'none';
+        }
+
+        function resetImageUpload() {
+            imagePreview.classList.remove('show');
+            noImageMessage.style.display = 'block';
+            currentImageData = null;
+            imageFileInput.value = '';
+            imageUrlInput.value = '';
+            imageEmbedInput.value = '';
+            hideAllUploadOptions();
+        }
+
+        // FAB functionality
+        function toggleFabOptions() {
+            fabOptions.classList.toggle('show');
+        }
+
+        // Subject modal functions
+        function showAddSubjectModal() {
+            addSubjectModal.classList.add('show');
+            fabOptions.classList.remove('show');
+        }
+
+        function hideAddSubjectModal() {
+            addSubjectModal.classList.remove('show');
+            document.getElementById('subjectNameInput').value = '';
+        }
+
+        function addNewSubject() {
+            const subjectNameInput = document.getElementById('subjectNameInput');
+            const subjectName = subjectNameInput.value.trim();
+            
+            if (!subjectName) {
+                alert('Vui lòng nhập tên môn học');
+                subjectNameInput.focus();
+                return;
+            }
+
+            if (subjects.some(subject => subject.name.toLowerCase() === subjectName.toLowerCase())) {
+                alert('Tên môn học đã tồn tại');
+                subjectNameInput.focus();
+                return;
+            }
+
+            const newSubject = {
+                id: 'subject-' + Date.now(),
+                name: subjectName,
+                icon: 'fas fa-folder',
+                count: 0
+            };
+
+            subjects.push(newSubject);
+            
+            if (saveAllData()) {
+                renderSubjects();
+                populateSubjectSelect();
+                hideAddSubjectModal();
+                alert('Thêm môn học thành công!');
+            }
+        }
+
+        // Lesson modal functions
+        function showAddLessonModal() {
+            currentEditLessonId = null;
+            document.getElementById('lessonModalTitle').textContent = 'Thêm bài giảng mới';
+            document.getElementById('saveLessonBtn').textContent = 'Thêm bài giảng';
+            
+            // Reset form
+            resetLessonForm();
+            
+            addLessonModal.classList.add('show');
+            fabOptions.classList.remove('show');
+        }
+
+        function hideAddLessonModal() {
+            addLessonModal.classList.remove('show');
+            currentEditLessonId = null;
+            resetLessonForm();
+        }
+
+        function resetLessonForm() {
+            document.getElementById('lessonNameInput').value = '';
+            document.getElementById('lessonSubjectSelect').selectedIndex = 0;
+            document.getElementById('lessonDescriptionInput').value = '';
+            document.getElementById('lessonLinkInput').value = '';
+            resetImageUpload();
+        }
+
+        function saveLesson() {
+            const name = document.getElementById('lessonNameInput').value.trim();
+            const subject = document.getElementById('lessonSubjectSelect').value;
+            const description = document.getElementById('lessonDescriptionInput').value.trim();
+            const link = document.getElementById('lessonLinkInput').value.trim();
+
+            // Validation
+            if (!name) {
+                alert('Vui lòng nhập tên bài giảng');
+                document.getElementById('lessonNameInput').focus();
+                return;
+            }
+
+            if (!subject) {
+                alert('Vui lòng chọn môn học');
+                document.getElementById('lessonSubjectSelect').focus();
+                return;
+            }
+
+            if (!link) {
+                alert('Vui lòng nhập đường link bài giảng');
+                document.getElementById('lessonLinkInput').focus();
+                return;
+            }
+
+            if (!link.startsWith('http://') && !link.startsWith('https://')) {
+                alert('Vui lòng nhập đường link hợp lệ (bắt đầu với http:// hoặc https://)');
+                document.getElementById('lessonLinkInput').focus();
+                return;
+            }
+
+            if (currentEditLessonId) {
+                // Update existing lesson
+                const lessonIndex = lessons.findIndex(l => l.id === currentEditLessonId);
+                if (lessonIndex !== -1) {
+                    lessons[lessonIndex] = {
+                        ...lessons[lessonIndex],
+                        name: name,
+                        description: description,
+                        subject: subject,
+                        link: link,
+                        image: currentImageData,
+                        updated: new Date().toISOString().split('T')[0]
+                    };
+                    
+                    if (saveAllData()) {
+                        updateSubjectCounts();
+                        renderSubjects();
+                        renderLessons(currentSubjectId);
+                        hideAddLessonModal();
+                        alert('Cập nhật bài giảng thành công!');
+                    }
+                }
+            } else {
+                // Add new lesson
+                const newLesson = {
+                    id: Date.now(),
+                    name: name,
+                    description: description,
+                    subject: subject,
+                    link: link,
+                    image: currentImageData,
+                    created: new Date().toISOString().split('T')[0],
+                    updated: new Date().toISOString().split('T')[0]
+                };
+
+                lessons.push(newLesson);
+                
+                if (saveAllData()) {
+                    updateSubjectCounts();
+                    renderSubjects();
+                    
+                    // Switch to the subject of the new lesson
+                    const subjectItem = document.querySelector(`.subject-item[data-subject="${subject}"]`);
+                    if (subjectItem) {
+                        subjectItem.click();
+                    } else {
+                        renderLessons(currentSubjectId);
+                    }
+                    
+                    hideAddLessonModal();
+                    alert('Thêm bài giảng thành công!');
+                }
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Subject click event - FIXED: using event delegation
+            subjectList.addEventListener('click', (e) => {
+                const subjectItem = e.target.closest('.subject-item');
+                if (subjectItem) {
+                    document.querySelectorAll('.subject-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    subjectItem.classList.add('active');
+                    
+                    const subjectId = subjectItem.dataset.subject;
+                    renderLessons(subjectId);
+                }
+            });
+
+            // FAB click event
+            fabMain.addEventListener('click', toggleFabOptions);
+
+            // Image upload events
+            imageFileInput.addEventListener('change', handleFileUpload);
+            imageUrlInput.addEventListener('input', handleUrlUpload);
+            imageEmbedInput.addEventListener('input', handleEmbedUpload);
+
+            // Close modals when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === addSubjectModal) hideAddSubjectModal();
+                if (e.target === addLessonModal) hideAddLessonModal();
+            });
+
+            // Close FAB options when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!fabMain.contains(e.target) && !fabOptions.contains(e.target)) {
+                    fabOptions.classList.remove('show');
+                }
+            });
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
