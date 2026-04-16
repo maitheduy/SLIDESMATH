@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bài giảng: Từ Đạo hàm đến Gradient, Curl, Divergence | Think out of the box</title>
+  
+  <!-- MathJax 3 -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+  <script>
+    MathJax = {
+      tex: {
+        displayMath: [['\\[', '\\]'], ['$$', '$$']],
+        inlineMath: [['\\(', '\\)']],
+        tags: 'ams',
+        packages: {'[+]': ['ams', 'newcommand']}
+      }
+    };
+  </script>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #e0e0e0;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    /* Layout 2 cột */
+    .app-wrapper {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar - Mục lục */
+    .sidebar {
+      width: 300px;
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+      border-right: 1px solid #e94560;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+    
+    .sidebar-header {
+      padding: 2rem 1.2rem;
+      border-bottom: 2px solid #e94560;
+      text-align: center;
+    }
+    
+    .sidebar-header .logo-icon {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    
+    .sidebar-header h2 {
+      color: #e94560;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    
+    .sidebar-header p {
+      color: #888;
+      font-size: 0.7rem;
+      margin-top: 0.3rem;
+    }
+    
+    .table-of-contents {
+      padding: 1.2rem 0;
+    }
+    
+    .toc-title {
+      padding: 0.5rem 1.2rem;
+      color: #e94560;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #e94560;
+      margin-bottom: 0.8rem;
+    }
+    
+    .toc-list {
+      list-style: none;
+    }
+    
+    .toc-list li {
+      margin: 0;
+      border-bottom: 1px solid rgba(233,69,96,0.2);
+    }
+    
+    .toc-list a {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.9rem 1.2rem;
+      color: #ccc;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.3s;
+      border-left: 3px solid transparent;
+    }
+    
+    .toc-list a:hover {
+      background: rgba(233,69,96,0.1);
+      border-left-color: #e94560;
+      color: #fff;
+    }
+    
+    .toc-list a.active {
+      background: rgba(233,69,96,0.15);
+      border-left-color: #e94560;
+      color: #e94560;
+    }
+    
+    .toc-number {
+      background: rgba(233,69,96,0.2);
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 2rem 2.5rem;
+      max-width: calc(100% - 300px);
+    }
+    
+    /* Header */
+    .main-header {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border-radius: 20px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid #e94560;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    .main-header h1 {
+      color: #e94560;
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .main-header p {
+      color: #aaa;
+      font-style: italic;
+    }
+    
+    /* Card */
+    .card {
+      background: rgba(26,26,46,0.95);
+      border-radius: 20px;
+      border: 1px solid #e94560;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: all 0.3s;
+      scroll-margin-top: 20px;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(233,69,96,0.2);
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px dashed #e94560;
+      flex-wrap: wrap;
+    }
+    
+    .card-header h3 {
+      color: #e94560;
+      font-size: 1.5rem;
+    }
+    
+    .badge {
+      background: rgba(233,69,96,0.2);
+      color: #e94560;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      border: 1px solid #e94560;
+    }
+    
+    /* Prose */
+    .prose {
+      font-size: 1rem;
+      line-height: 1.9;
+      text-align: justify;
+    }
+    
+    .prose strong {
+      color: #e94560;
+    }
+    
+    .math-display {
+      background: #0f0c29;
+      padding: 1rem;
+      border-radius: 12px;
+      margin: 1rem 0;
+      text-align: center;
+      overflow-x: auto;
+      border-left: 4px solid #e94560;
+    }
+    
+    .insight-box {
+      background: linear-gradient(135deg, rgba(233,69,96,0.1), rgba(233,69,96,0.05));
+      border: 1px solid #e94560;
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin: 1rem 0;
+      font-style: italic;
+    }
+    
+    .insight-box::before {
+      content: "💡 Think out of the box: ";
+      color: #e94560;
+      font-weight: 700;
+      font-style: normal;
+    }
+    
+    .formula-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    
+    .formula-table th, .formula-table td {
+      border: 1px solid #e94560;
+      padding: 0.8rem;
+      text-align: center;
+    }
+    
+    .formula-table th {
+      background: rgba(233,69,96,0.2);
+      color: #e94560;
+    }
+    
+    .footer {
+      background: #1a1a2e;
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+      margin-top: 2rem;
+      border: 1px solid #e94560;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #e94560;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 12px;
+      transform: translateX(200%);
+      transition: transform 0.3s;
+      z-index: 2000;
+    }
+    
+    .toast.show { transform: translateX(0); }
+    
+    @media (max-width: 768px) {
+      .sidebar { width: 250px; }
+      .main-content { padding: 1rem; }
+      .main-header h1 { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">∇</span>
+      <h2>TOÁN TỬ VI PHÂN</h2>
+      <p>Từ Đạo hàm → Gradient → Curl → Divergence</p>
+    </div>
+    <div class="table-of-contents">
+      <div class="toc-title">📑 HÀNH TRÌNH TIẾN HÓA</div>
+      <ul class="toc-list">
+        <li><a href="#bai1" class="toc-link" data-target="bai1"><span class="toc-number">01</span> Đạo hàm hàm một biến – Khởi đầu</a></li>
+        <li><a href="#bai2" class="toc-link" data-target="bai2"><span class="toc-number">02</span> Đạo hàm riêng – Bước vào không gian nhiều chiều</a></li>
+        <li><a href="#bai3" class="toc-link" data-target="bai3"><span class="toc-number">03</span> Gradient – Hướng dốc nhất</a></li>
+        <li><a href="#bai4" class="toc-link" data-target="bai4"><span class="toc-number">04</span> Divergence – Nguồn và điểm tụ</a></li>
+        <li><a href="#bai5" class="toc-link" data-target="bai5"><span class="toc-number">05</span> Curl – Xoáy và vòng tròn</a></li>
+        <li><a href="#bai6" class="toc-link" data-target="bai6"><span class="toc-number">06</span> Think out of the box – Phá vỡ bế tắc</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="main-header">
+      <h1>📐 Từ Đạo hàm một biến đến Gradient, Curl và Divergence</h1>
+      <p>Con đường tiến hóa của toán tử vi phân trong các không gian tương ứng<br>và những "Think out of the box" khi không gian cũ bị bế tắc</p>
+    </div>
+
+    <!-- Bài 1: Đạo hàm hàm một biến -->
+    <article class="card" id="bai1">
+      <div class="card-header">
+        <h3>📖 Bài 1: Đạo hàm hàm một biến – Khởi đầu</h3>
+        <span class="badge">Nền tảng</span>
+      </div>
+      <div class="prose">
+        <strong>Định nghĩa:</strong> Đạo hàm của hàm một biến \(f(x)\) tại điểm \(x_0\) là giới hạn:
+        <div class="math-display">
+          \[
+          f'(x_0) = \lim_{h \to 0} \frac{f(x_0 + h) - f(x_0)}{h}
+          \]
+        </div>
+        <strong>Ý nghĩa hình học:</strong> Độ dốc (slope) của tiếp tuyến với đồ thị hàm số tại điểm đó.<br>
+        <strong>Ý nghĩa vật lý:</strong> Vận tốc tức thời của chuyển động.
+        
+        <div class="insight-box">
+          Đạo hàm trả lời câu hỏi: "Khi \(x\) thay đổi một lượng rất nhỏ, \(f(x)\) thay đổi thế nào?" 
+          Đây là nền tảng của mọi phép tính vi phân.
+        </div>
+      </div>
+    </article>
+
+    <!-- Bài 2: Đạo hàm riêng -->
+    <article class="card" id="bai2">
+      <div class="card-header">
+        <h3>📖 Bài 2: Đạo hàm riêng – Bước vào không gian nhiều chiều</h3>
+        <span class="badge">Mở rộng</span>
+      </div>
+      <div class="prose">
+        Khi hàm có nhiều biến \(f(x, y, z)\), ta không thể chỉ có một đạo hàm duy nhất. Thay vào đó, ta có <strong>đạo hàm riêng</strong> theo từng biến:
+        <div class="math-display">
+          \[
+          \frac{\partial f}{\partial x} = \lim_{h \to 0} \frac{f(x+h, y, z) - f(x,y,z)}{h}
+          \]
+        </div>
+        <strong>Ẩn dụ:</strong> Giống như bạn đang đứng trên một ngọn đồi – đạo hàm riêng theo \(x\) cho biết độ dốc khi bước về phía Đông, theo \(y\) là độ dốc khi bước về phía Bắc.
+        
+        <div class="insight-box">
+          <strong>Think out of the box:</strong> Đạo hàm riêng là "mắt lưới" – mỗi mắt lưới nhìn một chiều riêng. Nhưng để thấy được toàn cảnh, ta cần kết hợp chúng lại.
+        </div>
+      </div>
+    </article>
+
+    <!-- Bài 3: Gradient -->
+    <article class="card" id="bai3">
+      <div class="card-header">
+        <h3>📖 Bài 3: Gradient – Hướng dốc nhất</h3>
+        <span class="badge">Vector hóa</span>
+      </div>
+      <div class="prose">
+        <strong>Định nghĩa:</strong> Gradient của hàm vô hướng \(f(x,y,z)\) là một vector:
+        <div class="math-display">
+          \[
+          \nabla f = \left( \frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}, \frac{\partial f}{\partial z} \right)
+          \]
+        </div>
+        <strong>Ý nghĩa hình học:</strong> Gradient chỉ <strong>hướng tăng nhanh nhất</strong> của hàm số, và độ lớn của nó là tốc độ tăng theo hướng đó.
+        
+        <div class="math-display">
+          \[
+          \text{Toán tử Nabla: } \nabla = \left( \frac{\partial}{\partial x}, \frac{\partial}{\partial y}, \frac{\partial}{\partial z} \right)
+          \]
+        </div>
+        
+        <div class="insight-box">
+          <strong>Think out of the box:</strong> Gradient là "la bàn" trong không gian nhiều chiều. Khi bạn bị lạc trong không gian 3D, Gradient chỉ cho bạn đường lên đỉnh dốc nhất. Trong Machine Learning, Gradient Descent dùng chính ý tưởng này để tìm cực trị!
+        </div>
+      </div>
+    </article>
+
+    <!-- Bài 4: Divergence -->
+    <article class="card" id="bai4">
+      <div class="card-header">
+        <h3>📖 Bài 4: Divergence – Nguồn và điểm tụ</h3>
+        <span class="badge">Từ vector → vô hướng</span>
+      </div>
+      <div class="prose">
+        <strong>Divergence</strong> tác động lên <strong>trường vector</strong> \(\mathbf{F} = (P, Q, R)\) và cho ra một <strong>vô hướng</strong>:
+        <div class="math-display">
+          \[
+          \nabla \cdot \mathbf{F} = \frac{\partial P}{\partial x} + \frac{\partial Q}{\partial y} + \frac{\partial R}{\partial z}
+          \]
+        </div>
+        <strong>Ý nghĩa vật lý:</strong> Divergence đo "lưu lượng thuần" của trường vector đi ra khỏi một điểm.
+        <ul>
+          <li>\(\nabla \cdot \mathbf{F} > 0\): điểm là nguồn (chất lỏng phun ra)</li>
+          <li>\(\nabla \cdot \mathbf{F} < 0\): điểm là điểm tụ (chất lỏng hút vào)</li>
+          <li>\(\nabla \cdot \mathbf{F} = 0\): trường không nén được (incompressible)</li>
+        </ul>
+        
+        <div class="insight-box">
+          <strong>Think out of the box:</strong> Trong kinh doanh, Divergence có thể hiểu là "dòng tiền thuần" tại một điểm trong mạng lưới phân phối. Nơi có divergence dương là nơi tiền "sinh ra", nơi divergence âm là nơi tiền "bị hút".
+        </div>
+      </div>
+    </article>
+
+    <!-- Bài 5: Curl -->
+    <article class="card" id="bai5">
+      <div class="card-header">
+        <h3>📖 Bài 5: Curl – Xoáy và vòng tròn</h3>
+        <span class="badge">Từ vector → vector</span>
+      </div>
+      <div class="prose">
+        <strong>Curl</strong> tác động lên <strong>trường vector</strong> \(\mathbf{F} = (P, Q, R)\) và cho ra một <strong>vector</strong>:
+        <div class="math-display">
+          \[
+          \nabla \times \mathbf{F} = 
+          \begin{vmatrix}
+          \mathbf{i} & \mathbf{j} & \mathbf{k} \\
+          \frac{\partial}{\partial x} & \frac{\partial}{\partial y} & \frac{\partial}{\partial z} \\
+          P & Q & R
+          \end{vmatrix}
+          = \left( \frac{\partial R}{\partial y} - \frac{\partial Q}{\partial z},\; \frac{\partial P}{\partial z} - \frac{\partial R}{\partial x},\; \frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y} \right)
+          \]
+        </div>
+        <strong>Ý nghĩa vật lý:</strong> Curl đo <strong>xu hướng xoay</strong> (rotation) của trường vector quanh một điểm.
+        <ul>
+          <li>\(\nabla \times \mathbf{F} = 0\): trường không xoáy (irrotational)</li>
+          <li>Curl càng lớn → xoáy càng mạnh</li>
+        </ul>
+        
+        <div class="insight-box">
+          <strong>Think out of the box:</strong> Curl là "cơn lốc" trong dữ liệu. Trong phân tích thị trường, curl có thể phát hiện các vòng xoáy của nhu cầu – nơi sản phẩm "xoay vòng" nhanh chóng giữa các phân khúc khách hàng.
+        </div>
+      </div>
+    </article>
+
+    <!-- Bài 6: Think out of the box -->
+    <article class="card" id="bai6">
+      <div class="card-header">
+        <h3>📖 Bài 6: Think out of the box – Phá vỡ bế tắc</h3>
+        <span class="badge">Đột phá</span>
+      </div>
+      <div class="prose">
+        <strong>Khi không gian cũ bị bế tắc:</strong>
+        
+        <p>Toán tử vi phân cổ điển hoạt động tốt trong không gian Euclid. Nhưng khi gặp:</p>
+        <ul>
+          <li><strong>Không gian cong</strong> (đa tạp Riemann) → Cần khái niệm <strong>đạo hàm hiệp biến (Covariant Derivative)</strong></li>
+          <li><strong>Không gian vô hạn chiều</strong> (không gian hàm) → Cần <strong>đạo hàm Gateaux/Fréchet</strong></li>
+          <li><strong>Dữ liệu rời rạc / đồ thị</strong> → Cần <strong>Gradient trên đồ thị (Graph Gradient)</strong></li>
+          <li><strong>Không gian xác suất</strong> → Cần <strong>toán tử Stein / Score function</strong></li>
+        </ul>
+        
+        <div class="math-display">
+          \[
+          \text{Đạo hàm hiệp biến: } \nabla_X Y = \text{thành phần tiếp tuyến của } \partial_X Y
+          \]
+          \[
+          \text{Gradient trên đồ thị: } (\nabla f)(i,j) = w_{ij}(f_j - f_i)
+          \]
+        </div>
+        
+        <div class="insight-box">
+          <strong>Think out of the box – Bước đột phá:</strong><br><br>
+          "Khi bạn không thể tính đạo hàm trong không gian hiện tại, hãy nhúng không gian đó vào một không gian lớn hơn, nơi đạo hàm tồn tại. Sau đó, chiếu ngược lại."
+          <br><br>
+          Đây chính là tư tưởng của <strong>phép tính vi phân trên đa tạp (Manifold Calculus)</strong> và <strong>học máy hình học (Geometric Deep Learning)</strong> – những lĩnh vực đang cách mạng hóa AI hiện đại.
+        </div>
+        
+        <table class="formula-table">
+          <thead><tr><th>Không gian</th><th>Bế tắc</th><th>Giải pháp</th><th>Ứng dụng</th></tr></thead>
+          <tbody>
+            <tr><td>Đường thẳng \(\mathbb{R}\)</td><td>Chỉ một chiều</td><td>Đạo hàm \(f'(x)\)</td><td>Vận tốc, gia tốc</td></tr>
+            <tr><td>Mặt phẳng \(\mathbb{R}^2\)</td><td>Nhiều hướng</td><td>Gradient \(\nabla f\)</td><td>Machine Learning, tối ưu</td></tr>
+            <tr><td>Trường vector 3D</td><td>Xoáy & nguồn</td><td>Curl \(\nabla \times\) & Div \(\nabla \cdot\)</td><td>Điện động lực học, thủy động lực</td></tr>
+            <tr><td>Đa tạp cong (Manifold)</td><td>Không có tọa độ toàn cục</td><td>Đạo hàm hiệp biến \(\nabla_X Y\)</td><td>Thuyết tương đối rộng, Robotics</td></tr>
+            <tr><td>Đồ thị (Graph)</td><td>Dữ liệu rời rạc</td><td>Graph Gradient / Laplacian</td><td>GNN, mạng xã hội</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <!-- Tổng kết -->
+    <div class="footer">
+      <h3 style="color:#e94560;">📌 Tổng kết hành trình tiến hóa</h3>
+      <table style="width:100%; margin:1rem 0; border-collapse:collapse;">
+        <thead><tr style="color:#e94560;"><th>Toán tử</th><th>Đầu vào</th><th>Đầu ra</th><th>Ý nghĩa</th></tr></thead>
+        <tbody>
+          <tr><td>\(\frac{d}{dx}\)</td><td>Hàm \(f(x)\)</td><td>Vô hướng</td><td>Tốc độ thay đổi</td></tr>
+          <tr><td>\(\nabla f\)</td><td>Hàm \(f(x,y,z)\)</td><td>Vector</td><td>Hướng dốc nhất</td></tr>
+          <tr><td>\(\nabla \cdot \mathbf{F}\)</td><td>Trường vector \(\mathbf{F}\)</td><td>Vô hướng</td><td>Nguồn / điểm tụ</td></tr>
+          <tr><td>\(\nabla \times \mathbf{F}\)</td><td>Trường vector \(\mathbf{F}\)</td><td>Vector</td><td>Xoáy</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:1rem;">
+        🔗 <strong>Think out of the box:</strong> Mọi không gian đều có thể trang bị một "đạo hàm" riêng – chỉ cần tìm đúng cấu trúc vi phân phù hợp.
+      </p>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast">✅ Đã sao chép!</div>
+
+<script>
+  // Active menu khi scroll
+  const sections = document.querySelectorAll('.card');
+  const navLinks = document.querySelectorAll('.toc-link');
+  
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop - 120;
+      if (pageYOffset >= sectionTop) current = section.getAttribute('id');
+    });
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('data-target') === current) link.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
