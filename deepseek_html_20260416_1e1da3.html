@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bài giảng: ∇ - Tại sao tam giác lộn ngược? | Nabla và ý nghĩa hình học</title>
+  
+  <!-- MathJax 3 -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+  <script>
+    MathJax = {
+      tex: {
+        displayMath: [['\\[', '\\]'], ['$$', '$$']],
+        inlineMath: [['\\(', '\\)']],
+        tags: 'ams',
+        packages: {'[+]': ['ams', 'newcommand']}
+      }
+    };
+  </script>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+      color: #e0e0e0;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    .app-wrapper {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 320px;
+      background: linear-gradient(180deg, #0f0f23 0%, #0a0a1a 100%);
+      border-right: 2px solid #00d4ff;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+    
+    .sidebar-header {
+      padding: 2rem 1.2rem;
+      border-bottom: 2px solid #00d4ff;
+      text-align: center;
+    }
+    
+    .sidebar-header .nabla-symbol {
+      font-size: 4rem;
+      font-weight: 700;
+      color: #00d4ff;
+      display: block;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 10px rgba(0,212,255,0.5);
+    }
+    
+    .sidebar-header h2 {
+      color: #00d4ff;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    
+    .sidebar-header p {
+      color: #888;
+      font-size: 0.75rem;
+      margin-top: 0.3rem;
+    }
+    
+    .table-of-contents {
+      padding: 1.2rem 0;
+    }
+    
+    .toc-title {
+      padding: 0.5rem 1.2rem;
+      color: #00d4ff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #00d4ff;
+      margin-bottom: 0.8rem;
+    }
+    
+    .toc-list {
+      list-style: none;
+    }
+    
+    .toc-list li {
+      margin: 0;
+      border-bottom: 1px solid rgba(0,212,255,0.15);
+    }
+    
+    .toc-list a {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.9rem 1.2rem;
+      color: #ccc;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.3s;
+      border-left: 3px solid transparent;
+    }
+    
+    .toc-list a:hover {
+      background: rgba(0,212,255,0.1);
+      border-left-color: #00d4ff;
+      color: #fff;
+    }
+    
+    .toc-list a.active {
+      background: rgba(0,212,255,0.15);
+      border-left-color: #00d4ff;
+      color: #00d4ff;
+    }
+    
+    .toc-number {
+      background: rgba(0,212,255,0.15);
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 2rem 2.5rem;
+      max-width: calc(100% - 320px);
+    }
+    
+    .main-header {
+      background: linear-gradient(135deg, #0f0f23, #0a0a1a);
+      border-radius: 20px;
+      padding: 1.8rem 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid #00d4ff;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    
+    .main-header .big-nabla {
+      font-size: 5rem;
+      color: #00d4ff;
+      margin-bottom: 0.5rem;
+    }
+    
+    .main-header h1 {
+      color: #00d4ff;
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .main-header p {
+      color: #aaa;
+      font-style: italic;
+    }
+    
+    /* Card */
+    .card {
+      background: rgba(15,15,35,0.9);
+      border-radius: 20px;
+      border: 1px solid #00d4ff;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: all 0.3s;
+      scroll-margin-top: 20px;
+    }
+    
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0,212,255,0.15);
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px dashed #00d4ff;
+      flex-wrap: wrap;
+    }
+    
+    .card-header h3 {
+      color: #00d4ff;
+      font-size: 1.5rem;
+    }
+    
+    .badge {
+      background: rgba(0,212,255,0.15);
+      color: #00d4ff;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      border: 1px solid #00d4ff;
+    }
+    
+    .prose {
+      font-size: 1rem;
+      line-height: 1.9;
+      text-align: justify;
+    }
+    
+    .prose strong {
+      color: #00d4ff;
+    }
+    
+    .math-display {
+      background: #0a0a1a;
+      padding: 1rem;
+      border-radius: 12px;
+      margin: 1rem 0;
+      text-align: center;
+      overflow-x: auto;
+      border-left: 4px solid #00d4ff;
+    }
+    
+    .insight-box {
+      background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,212,255,0.02));
+      border: 1px solid #00d4ff;
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin: 1rem 0;
+      font-style: italic;
+    }
+    
+    .insight-box::before {
+      content: "🔍 Think out of the box: ";
+      color: #00d4ff;
+      font-weight: 700;
+      font-style: normal;
+    }
+    
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    
+    .comparison-table th, .comparison-table td {
+      border: 1px solid #00d4ff;
+      padding: 0.8rem;
+      text-align: center;
+    }
+    
+    .comparison-table th {
+      background: rgba(0,212,255,0.15);
+      color: #00d4ff;
+    }
+    
+    .visualization {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+    
+    .vis-item {
+      text-align: center;
+      background: rgba(0,212,255,0.05);
+      padding: 1rem;
+      border-radius: 12px;
+    }
+    
+    .vis-symbol {
+      font-size: 3rem;
+      font-weight: 700;
+    }
+    
+    .footer {
+      background: #0f0f23;
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+      margin-top: 2rem;
+      border: 1px solid #00d4ff;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #00d4ff;
+      color: #0a0a1a;
+      padding: 0.8rem 1.5rem;
+      border-radius: 12px;
+      transform: translateX(200%);
+      transition: transform 0.3s;
+      z-index: 2000;
+      font-weight: 700;
+    }
+    
+    .toast.show { transform: translateX(0); }
+    
+    @media (max-width: 768px) {
+      .sidebar { width: 260px; }
+      .main-content { padding: 1rem; }
+      .main-header h1 { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="nabla-symbol">∇</span>
+      <h2>TOÁN TỬ NABLA</h2>
+      <p>Tam giác lộn ngược – Biểu tượng của vi phân trong không gian</p>
+    </div>
+    <div class="table-of-contents">
+      <div class="toc-title">📑 NỘI DUNG</div>
+      <ul class="toc-list">
+        <li><a href="#bai1" class="toc-link" data-target="bai1"><span class="toc-number">01</span> Tam giác Δ – Delta trong toán học</a></li>
+        <li><a href="#bai2" class="toc-link" data-target="bai2"><span class="toc-number">02</span> Tại sao lộn ngược? – Nguồn gốc lịch sử</a></li>
+        <li><a href="#bai3" class="toc-link" data-target="bai3"><span class="toc-number">03</span> Ý nghĩa hình học của mũi tên ∇</a></li>
+        <li><a href="#bai4" class="toc-link" data-target="bai4"><span class="toc-number">04</span> Nabla như một toán tử vector</a></li>
+        <li><a href="#bai5" class="toc-link" data-target="bai5"><span class="toc-number">05</span> Các phép toán với ∇</a></li>
+        <li><a href="#bai6" class="toc-link" data-target="bai6"><span class="toc-number">06</span> Think out of the box – Từ Nabla đến Học máy</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="main-header">
+      <div class="big-nabla">∇</div>
+      <h1>∇ - Tại sao tam giác lại lộn ngược?</h1>
+      <p>Hành trình khám phá nguồn gốc và ý nghĩa của ký hiệu toán tử Nabla</p>
+    </div>
+
+    <!-- Bài 1: Tam giác Delta -->
+    <article class="card" id="bai1">
+      <div class="card-header">
+        <h3>📐 Bài 1: Tam giác Δ – Delta trong toán học</h3>
+        <span class="badge">Nguồn gốc</span>
+      </div>
+      <div class="prose">
+        <strong>Ký hiệu Δ (Delta hoa – chữ cái thứ tư trong bảng chữ cái Hy Lạp)</strong> đã xuất hiện trong toán học từ rất lâu với nhiều ý nghĩa:
+        
+        <ul>
+          <li><strong>Biến thiên (Difference):</strong> \(\Delta x\) chỉ "sự thay đổi của x"</li>
+          <li><strong>Delta Dirac:</strong> \(\delta(x)\) – hàm xung trong vật lý</li>
+          <li><strong>Toán tử Laplace:</strong> \(\Delta f = \nabla^2 f = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2} + \frac{\partial^2 f}{\partial z^2}\)</li>
+          <li><strong>Biệt thức (Discriminant):</strong> \(\Delta = b^2 - 4ac\) trong phương trình bậc hai</li>
+        </ul>
+        
+        <div class="math-display">
+          \[
+          \Delta x = x_2 - x_1 \quad\text{(sự thay đổi)}
+          \]
+          \[
+          \Delta f = \nabla^2 f = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2} + \frac{\partial^2 f}{\partial z^2} \quad\text{(Laplacian)}
+          \]
+        </div>
+        
+        <div class="insight-box">
+          Tam giác Δ tượng trưng cho "sự khác biệt", "sự thay đổi", "đỉnh cao". Hình dạng tam giác với đỉnh nhọn hướng lên trên gợi ý về một "điểm cao nhất" – một giá trị cực đại.
+        </div>
+      </div>
+    </article>
+
+    <!-- Bài 2: Tại sao lộn ngược? -->
+    <article class="card" id="bai2">
+      <div class="card-header">
+        <h3>🔄 Bài 2: Tại sao lộn ngược? – Nguồn gốc lịch sử</h3>
+        <span class="badge">Lịch sử</span>
+      </div>
+      <div class="prose">
+        <strong>Nhà toán học người Scotland – William Rowan Hamilton (1805–1865)</strong> là người đầu tiên sử dụng ký hiệu ∇ (Nabla) vào giữa thế kỷ 19.
+        
+        <p><strong>Tại sao lại lộn ngược tam giác?</strong></p>
+        
+        <ul>
+          <li><strong>Nabla</strong> (ἡ νάβλα) trong tiếng Hy Lạp cổ đại là tên của một loại <strong>đàn hạc</strong> (harp) có hình dạng giống như một <strong>tam giác lộn ngược</strong>.</li>
+          <li>Nhà toán học người Scotland <strong>Peter Guthrie Tait (1831–1901)</strong> – học trò của Hamilton – đã phổ biến ký hiệu này và đặt tên là "Nabla".</li>
+          <li>Ký hiệu này còn được gọi là <strong>"Atled"</strong> – Delta đọc ngược (Delta viết ngược).</li>
+        </ul>
+        
+        <div class="visualization">
+          <div class="vis-item">
+            <div class="vis-symbol">Δ</div>
+            <div>Delta (tam giác xuôi)<br>Đỉnh hướng lên</div>
+          </div>
+          <div class="vis-item">
+            <div class="vis-symbol" style="font-size:3rem; transform: rotate(180deg); display:inline-block;">Δ</div>
+            <div>Lộn ngược → ∇<br>Đỉnh hướng xuống</div>
+          </div>
+          <div class="vis-item">
+            <div class="vis-symbol">🎵</div>
+            <div>Đàn hạc Nabla<br>Hình dáng tương tự</div>
+          </div>
+        </div>
+        
+        <div class="insight-box">
+          Cái tên "Nabla" bắt nguồn từ hình dạng của cây đàn hạc – một nhạc cụ có dây hình tam giác lộn ngược. Ký hiệu này được chọn vì tính tương đồng về hình học, và nó đã trở thành biểu tượng toàn cầu của toán tử vi phân vector.
+        </div>
+      </div>
+    </article>
+
+    <!-- Bài 3: Ý nghĩa hình học của mũi tên -->
+    <article class="card" id="bai3">
+      <div class="card-header">
+        <h3>⬇️ Bài 3: Ý nghĩa hình học của mũi tên ∇</h3>
+        <span class="badge">Hình học</span>
+      </div>
+      <div class="prose">
+        <strong>Nabla ∇ có hình dạng như một mũi tên hướng xuống.</strong> Điều này hoàn toàn có chủ ý!
+        
+        <p><strong>Ý nghĩa ẩn dụ:</strong></p>
+        <ul>
+          <li>Mũi tên hướng xuống gợi ý về <strong>"đạo hàm"</strong> – sự đi xuống, sự biến đổi theo một hướng.</li>
+          <li>∇ tác động lên một hàm số giống như "mũi tên chỉ hướng thay đổi nhanh nhất" (Gradient).</li>
+          <li>Nếu Δ (Delta) tượng trưng cho "sự khác biệt hữu hạn", thì ∇ (Nabla) tượng trưng cho "sự khác biệt vi phân" – vô cùng nhỏ.</li>
+        </ul>
+        
+        <div class="math-display">
+          \[
+          \nabla f = \left( \frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}, \frac{\partial f}{\partial z} \right) \quad\text{(Gradient – vector chỉ hướng dốc nhất)}
+          \]
+        </div>
+        
+        <div class="insight-box">
+          Hình dạng mũi tên của ∇ không phải ngẫu nhiên: nó nhắc nhở chúng ta rằng toán tử này <strong>tạo ra vector</strong> – một đại lượng có hướng. Giống như mũi tên chỉ phương, ∇ chỉ phương thay đổi nhanh nhất của hàm số.
+        </div>
+      </div>
+    </article>
+
+    <!-- Bài 4: Nabla như toán tử vector -->
+    <article class="card" id="bai4">
+      <div class="card-header">
+        <h3>📦 Bài 4: Nabla như một toán tử vector</h3>
+        <span class="badge">Toán tử</span>
+      </div>
+      <div class="prose">
+        <strong>Điều kỳ diệu:</strong> Nabla vừa là <strong>toán tử vi phân</strong>, vừa có thể được coi như một <strong>vector</strong>!
+        
+        <div class="math-display">
+          \[
+          \nabla = \left( \frac{\partial}{\partial x}, \frac{\partial}{\partial y}, \frac{\partial}{\partial z} \right)
+          \]
+        </div>
+        
+        <p>Khi coi ∇ như một vector, ta có thể thực hiện các phép toán vector:</p>
+        
+        <table class="comparison-table">
+          <thead><tr><th>Phép toán vector</th><th>Với vector thường</th><th>Với toán tử ∇</th><th>Kết quả</th></tr></thead>
+          <tbody>
+            <tr><td>Nhân với vô hướng</td><td>\(c \cdot \mathbf{v}\)</td><td>\(c \nabla f\)</td><td>Vector</td></tr>
+            <tr><td>Dot product (vô hướng)</td><td>\(\mathbf{u} \cdot \mathbf{v}\)</td><td>\(\nabla \cdot \mathbf{F}\)</td><td>Vô hướng (Divergence)</td></tr>
+            <tr><td>Cross product (hữu hướng)</td><td>\(\mathbf{u} \times \mathbf{v}\)</td><td>\(\nabla \times \mathbf{F}\)</td><td>Vector (Curl)</td></tr>
+            <tr><td>Nhân với hàm số</td><td>\(-\)</td><td>\(\nabla f\)</td><td>Vector (Gradient)</td></tr>
+          </tbody>
+        </table>
+        
+        <div class="insight-box">
+          Đây chính là "thiên tài" của ký hiệu Nabla: nó cho phép chúng ta sử dụng <strong>trực giác đại số vector</strong> để làm việc với <strong>phép tính vi phân</strong>. Mọi công thức vector đều có thể "nâng cấp" thành công thức vi phân bằng cách thay vector thường bằng ∇!
+        </div>
+      </div>
+    </article>
+
+    <!-- Bài 5: Các phép toán với ∇ -->
+    <article class="card" id="bai5">
+      <div class="card-header">
+        <h3>⚡ Bài 5: Các phép toán với ∇</h3>
+        <span class="badge">Ứng dụng</span>
+      </div>
+      <div class="prose">
+        <strong>Ba toán tử vi phân quan trọng bậc nhất được xây dựng từ ∇:</strong>
+        
+        <div class="math-display">
+          \[
+          \text{1. Gradient: } \nabla f = \left( \frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}, \frac{\partial f}{\partial z} \right)
+          \]
+          \[
+          \text{2. Divergence: } \nabla \cdot \mathbf{F} = \frac{\partial P}{\partial x} + \frac{\partial Q}{\partial y} + \frac{\partial R}{\partial z}
+          \]
+          \[
+          \text{3. Curl: } \nabla \times \mathbf{F} = 
+          \begin{vmatrix}
+          \mathbf{i} & \mathbf{j} & \mathbf{k} \\
+          \frac{\partial}{\partial x} & \frac{\partial}{\partial y} & \frac{\partial}{\partial z} \\
+          P & Q & R
+          \end{vmatrix}
+          \]
+        </div>
+        
+        <p><strong>Toán tử bậc hai (Laplacian):</strong></p>
+        <div class="math-display">
+          \[
+          \nabla^2 f = \nabla \cdot (\nabla f) = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2} + \frac{\partial^2 f}{\partial z^2}
+          \]
+          \[
+          \Delta f = \nabla^2 f \quad\text{(chính là Delta – tam giác xuôi!)}
+          \]
+        </div>
+        
+        <div class="insight-box">
+          <strong>Một sự trùng hợp thú vị:</strong> Laplacian (\(\nabla^2 f\)) còn được ký hiệu là \(\Delta f\) – quay trở lại với tam giác xuôi! Như vậy, Δ và ∇ có mối liên hệ mật thiết: \(\Delta = \nabla^2\).
+        </div>
+      </div>
+    </article>
+
+    <!-- Bài 6: Think out of the box -->
+    <article class="card" id="bai6">
+      <div class="card-header">
+        <h3>🧠 Bài 6: Think out of the box – Từ Nabla đến Học máy</h3>
+        <span class="badge">Đột phá</span>
+      </div>
+      <div class="prose">
+        <strong>Ký hiệu Nabla không chỉ dừng lại trong toán học thuần túy.</strong>
+        
+        <p><strong>Trong Machine Learning – Gradient Descent:</strong></p>
+        <div class="math-display">
+          \[
+          \theta_{\text{mới}} = \theta_{\text{cũ}} - \eta \nabla J(\theta)
+          \]
+        </div>
+        <p>Thuật toán tối ưu phổ biến nhất trong AI sử dụng chính Gradient \(\nabla J(\theta)\) để tìm cực trị hàm mất mát.</p>
+        
+        <p><strong>Trong Vật lý – Phương trình Maxwell:</strong></p>
+        <div class="math-display">
+          \[
+          \nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0}, \quad
+          \nabla \times \mathbf{E} = -\frac{\partial \mathbf{B}}{\partial t}, \quad
+          \nabla \cdot \mathbf{B} = 0, \quad
+          \nabla \times \mathbf{B} = \mu_0 \mathbf{J} + \mu_0 \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}
+          \]
+        </div>
+        
+        <p><strong>Trong Xử lý ảnh và Đồ thị:</strong></p>
+        <ul>
+          <li><strong>Graph Gradient:</strong> \(\nabla f(i,j) = w_{ij}(f_j - f_i)\) – phát hiện biên trong ảnh</li>
+          <li><strong>Graph Laplacian:</strong> \(\Delta f = \nabla^2 f\) – phân cụm dữ liệu trên đồ thị</li>
+        </ul>
+        
+        <div class="insight-box">
+          <strong>Tư duy đột phá:</strong> "Bất cứ khi nào bạn cần đo 'sự thay đổi' trong một không gian có cấu trúc, hãy tìm kiếm một toán tử giống Nabla. Nếu không gian là đa tạp, hãy dùng đạo hàm hiệp biến. Nếu không gian là đồ thị, hãy dùng Graph Gradient. Nabla là biểu tượng của sự thay đổi – và sự thay đổi là nền tảng của mọi khoa học."
+        </div>
+        
+        <table class="comparison-table">
+          <thead><tr><th>Không gian</th><th>Toán tử "giống Nabla"</th><th>Ứng dụng</th></tr></thead>
+          <tbody>
+            <tr><td>Đường thẳng \(\mathbb{R}\)</td><td>\(\frac{d}{dx}\)</td><td>Vận tốc, gia tốc</td></tr>
+            <tr><td>Không gian Euclid \(\mathbb{R}^n\)</td><td>\(\nabla = (\partial_1, \ldots, \partial_n)\)</td><td>Gradient Descent, tối ưu</td></tr>
+            <tr><td>Đa tạp cong (Manifold)</td><td>Đạo hàm hiệp biến \(\nabla_X Y\)</td><td>Thuyết tương đối rộng, Robotics</td></tr>
+            <tr><td>Đồ thị (Graph)</td><td>Graph Gradient / Laplacian</td><td>GNN, phân cụm, phát hiện cộng đồng</td></tr>
+            <tr><td>Không gian xác suất</td><td>Score function \(\nabla_\theta \log p_\theta(x)\)</td><td>Score-based generative models</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <!-- Footer tổng kết -->
+    <div class="footer">
+      <h3 style="color:#00d4ff;">📌 Tổng kết: Hành trình của ký hiệu ∇</h3>
+      
+      <table style="width:100%; margin:1rem 0; border-collapse:collapse;">
+        <thead><tr style="color:#00d4ff;"><th>Ký hiệu</th><th>Tên</th><th>Hình dạng</th><th>Ý nghĩa</th></tr></thead>
+        <tbody>
+          <tr><td>Δ</td><td>Delta</td><td>Tam giác xuôi (▽̅)</td><td>Sự khác biệt hữu hạn, Laplacian</td></tr>
+          <tr><td>∇</td><td>Nabla / Atled</td><td>Tam giác ngược (△̅)</td><td>Toán tử vi phân vector</td></tr>
+          <tr><td>∇f</td><td>Gradient</td><td>Nabla tác động lên hàm</td><td>Vector chỉ hướng dốc nhất</td></tr>
+          <tr><td>∇·F</td><td>Divergence</td><td>Dot product</td><td>Nguồn / điểm tụ</td></tr>
+          <tr><td>∇×F</td><td>Curl</td><td>Cross product</td><td>Xoáy</td></tr>
+          <tr><td>∇²f = Δf</td><td>Laplacian</td><td>Nabla bình phương</td><td>Tổng đạo hàm bậc hai</td></tr>
+        </tbody>
+      </table>
+      
+      <p style="margin-top:1rem;">
+        🔗 <strong>Think out of the box:</strong> Ký hiệu không chỉ là công cụ – nó là <strong>ngôn ngữ</strong> của tư duy. ∇ là minh chứng cho việc một biểu tượng hình học có thể chứa đựng cả một chương trình tính toán.
+      </p>
+      <p style="margin-top:0.5rem; font-size:0.85rem; color:#888;">
+        ∇ – từ cây đàn hạc Hy Lạp đến phương trình Maxwell, từ Gradient Descent đến Graph Neural Networks
+      </p>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast">✅ Đã sao chép nội dung!</div>
+
+<script>
+  // Active menu khi scroll
+  const sections = document.querySelectorAll('.card');
+  const navLinks = document.querySelectorAll('.toc-link');
+  
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop - 120;
+      if (pageYOffset >= sectionTop) current = section.getAttribute('id');
+    });
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('data-target') === current) link.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
